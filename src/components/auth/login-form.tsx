@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 
 import { roleLabels } from "../../lib/rbac";
 
-const loginRoles = ["SUPER_ADMIN", "FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"] as const;
+const loginRoles = ["SUPER_ADMIN", "FLEET_MANAGER", "DISPATCHER", "DRIVER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"] as const;
 
 export function LoginForm() {
     const router = useRouter();
@@ -14,6 +14,7 @@ export function LoginForm() {
     const [error, setError] = useState<string | null>(null);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState<(typeof loginRoles)[number]>(loginRoles[1] ?? loginRoles[0]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -31,18 +32,51 @@ export function LoginForm() {
                 })
             });
 
-            const payload = (await response.json()) as {
-                message?: string;
-                redirectTo?: string;
-            };
+            let payload: { message?: string; redirectTo?: string } = {};
+            try {
+                payload = await response.json();
+            } catch (e) {
+                console.error("Failed to parse login response:", e);
+            }
 
             if (!response.ok) {
                 setError(payload.message ?? "Login failed. Check your credentials and role.");
                 return;
             }
 
-            router.replace(payload.redirectTo ?? "/");
+            router.replace((payload.redirectTo ?? "/") as never);
             router.refresh();
+        });
+    };
+
+    const handleForgotPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        setError(null);
+
+        if (!email) {
+            setError("Please enter your email first to reset your password.");
+            return;
+        }
+
+        startTransition(async () => {
+            const response = await fetch("/api/auth/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            if (!response.ok) {
+                let payload: { message?: string } = {};
+                try {
+                    payload = await response.json();
+                } catch {
+                    // ignore parse errors
+                }
+                setError(payload.message ?? "Unable to send verification code.");
+                return;
+            }
+
+            router.push(`/reset-password?email=${encodeURIComponent(email)}`);
         });
     };
 
@@ -70,15 +104,28 @@ export function LoginForm() {
 
                 <label className="block space-y-2 text-sm text-white">
                     <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Password</span>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        required
-                        autoComplete="current-password"
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
-                        placeholder="••••••••"
-                    />
+                    <div className="relative">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            required
+                            autoComplete="current-password"
+                            className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 pl-4 pr-12 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                            placeholder="••••••••"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-4 text-[var(--muted)] hover:text-white transition"
+                        >
+                            {showPassword ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><line x1="2" y1="2" x2="22" y2="22" /></svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                            )}
+                        </button>
+                    </div>
                 </label>
 
                 <label className="block space-y-2 text-sm text-white">
@@ -101,9 +148,9 @@ export function LoginForm() {
                         <input type="checkbox" className="h-4 w-4 rounded border-white/20 bg-white/6 accent-[var(--accent)]" />
                         Remember me
                     </label>
-                    <Link href="/forgot-password" className="text-[var(--info)] transition hover:text-white">
+                    <button type="button" onClick={handleForgotPassword} className="text-[var(--info)] transition hover:text-white">
                         Forgot password?
-                    </Link>
+                    </button>
                 </div>
 
                 {error ? <p className="rounded-2xl border border-[rgba(216,90,76,0.35)] bg-[rgba(216,90,76,0.12)] px-4 py-3 text-sm text-[#ffb5ae]">{error}</p> : null}

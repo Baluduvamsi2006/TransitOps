@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 export function ForgotPasswordForm() {
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -27,16 +29,18 @@ export function ForgotPasswordForm() {
                 return;
             }
 
-            setMessage(payload.message ?? "If the address exists, a reset link has been sent.");
+            setMessage(payload.message ?? "If the address exists, a verification code has been sent.");
+            router.push(`/reset-password?email=${encodeURIComponent(email)}`);
         });
     };
+
 
     return (
         <div className="rounded-[2rem] border border-white/8 bg-[var(--panel)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">Reset email</p>
-                <h2 className="text-2xl font-semibold text-white">Send a reset link</h2>
-                <p className="text-sm leading-6 text-(--muted-2)">Enter the email address tied to the DB account. We will mail a one-time reset link.</p>
+                <h2 className="text-2xl font-semibold text-white">Send a verification code</h2>
+                <p className="text-sm leading-6 text-(--muted-2)">Enter the email address tied to the DB account. We will mail a one-time verification code.</p>
             </div>
 
             <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
@@ -61,7 +65,7 @@ export function ForgotPasswordForm() {
                     disabled={isPending}
                     className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-70"
                 >
-                    {isPending ? "Sending link..." : "Send reset link"}
+                    {isPending ? "Sending code..." : "Send code"}
                 </button>
             </form>
         </div>

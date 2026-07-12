@@ -12,12 +12,12 @@ export default function ForgotPasswordPage() {
     return (
         <AuthFrame
             eyebrow="Password recovery"
-            title="Request a reset email"
-            description="TransitOps sends a one-time password reset link to the email address on the account."
+            title="Request a verification code"
+            description="TransitOps sends a one-time verification code to the registered email address."
             bullets={[
-                "The reset link expires after a short window for safety.",
+                "The code expires after a short window for safety.",
                 "No role change happens during reset; the account keeps its DB role.",
-                "If SMTP is not configured yet, the link is written to the server log in development."
+                "If SMTP is not configured yet, the code is written to the server log in development."
             ]}
         >
             <ForgotPasswordForm />

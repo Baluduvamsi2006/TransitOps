@@ -16,7 +16,7 @@ export default async function LoginPage() {
     const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 
     if (sessionToken) {
-        redirect(getLandingPathForRole(toSessionInfo(sessionToken).role));
+        redirect(getLandingPathForRole(toSessionInfo(sessionToken).role) as never);
     }
 
     return (

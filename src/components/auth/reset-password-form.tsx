@@ -1,30 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 
-type ResetPasswordFormProps = {
-    token: string | null;
-};
-
-export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export function ResetPasswordForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const emailParam = searchParams.get("email") || "";
+
+    const [email, setEmail] = useState(emailParam);
+    const [code, setCode] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
-    const tokenMissing = !token;
-    const passwordsMatch = useMemo(() => password === confirmPassword, [confirmPassword, password]);
+    const passwordsMatch = password === confirmPassword;
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);
         setMessage(null);
 
-        if (!token) {
-            setError("The reset link is missing its token.");
+        if (!email || !code) {
+            setError("Email and verification code are required.");
             return;
         }
 
@@ -37,7 +37,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             const response = await fetch("/api/auth/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, password })
+                body: JSON.stringify({ email, code, password })
             });
 
             const payload = (await response.json()) as { message?: string };
@@ -58,16 +58,29 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">Reset password</p>
                 <h2 className="text-2xl font-semibold text-white">Choose a new password</h2>
-                <p className="text-sm leading-6 text-(--muted-2)">Use the one-time reset token from your email to set a fresh password.</p>
+                <p className="text-sm leading-6 text-(--muted-2)">Use the verification code from your email to set a fresh password.</p>
             </div>
 
-            {tokenMissing ? (
-                <p className="mt-6 rounded-2xl border border-[rgba(224,160,46,0.35)] bg-[rgba(224,160,46,0.12)] px-4 py-3 text-sm text-[#ffe1ad]">
-                    The reset token is missing. Open the password reset link from your email again.
-                </p>
-            ) : null}
-
             <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+                {email ? (
+                    <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white">
+                        Enter the verification code sent to your registered email <strong className="text-(--accent)">{email}</strong>
+                    </div>
+                ) : null}
+
+                <label className="block space-y-2 text-sm text-white">
+                    <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Verification code</span>
+                    <input
+                        type="text"
+                        value={code}
+                        onChange={(event) => setCode(event.target.value)}
+                        required
+                        autoComplete="one-time-code"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                        placeholder="123456"
+                    />
+                </label>
+
                 <label className="block space-y-2 text-sm text-white">
                     <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">New password</span>
                     <input
@@ -99,7 +112,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
                 <button
                     type="submit"
-                    disabled={isPending || tokenMissing}
+                    disabled={isPending}
                     className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-70"
                 >
                     {isPending ? "Updating password..." : "Update password"}
