@@ -26,7 +26,7 @@ export default async function MaintenancePage() {
   const avgCost = logs.length > 0 ? (totalCost / logs.length) : 0;
 
   const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
   };
 
   const maintenanceSummary = [
