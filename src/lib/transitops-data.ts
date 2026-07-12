@@ -111,8 +111,9 @@ export const topCostBars = [
 ] as const;
 
 export const rbacRows = [
-  ["Fleet Manager", "✓", "✓", "✓", "✓", "✓", "✓", "✓"],
-  ["Dispatcher", "✓", "✓", "✓", "✓", "—", "—", "—"],
+  ["Super Admin", "✓", "✓", "✓", "✓", "✓", "✓", "✓"],
+  ["Fleet Manager", "✓", "✓", "✓", "✓", "✓", "✓", "—"],
+  ["Dispatcher", "✓", "—", "—", "✓", "—", "—", "—"],
   ["Safety Officer", "✓", "—", "✓", "—", "—", "—", "—"],
   ["Financial Analyst", "✓", "—", "—", "—", "—", "✓", "✓"]
 ] as const;

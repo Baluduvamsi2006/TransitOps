@@ -22,8 +22,8 @@ export default function ReportsPage() {
           <div className="flex h-56 items-end gap-3">
             {monthlyBars.map((bar) => (
               <div key={bar.label} className="flex flex-1 flex-col items-center gap-3">
-                <div className="w-full rounded-t-2xl bg-[var(--accent)]" style={{ height: bar.width }} />
-                <span className="text-xs text-[var(--muted)]">{bar.label}</span>
+                <div className="w-full rounded-t-2xl bg-(--accent)" style={{ height: bar.width }} />
+                <span className="text-xs text-(--muted)">{bar.label}</span>
               </div>
             ))}
           </div>
@@ -33,12 +33,12 @@ export default function ReportsPage() {
           <div className="space-y-4">
             {topCostBars.map((item) => (
               <div key={item.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
+                <div className="flex items-center justify-between text-sm text-(--muted)">
                   <span>{item.label}</span>
                   <span>{item.cost}</span>
                 </div>
-                <div className="h-2 rounded-full bg-[var(--panel-strong)]">
-                  <div className="h-2 rounded-full bg-[var(--warning)]" style={{ width: item.width }} />
+                <div className="h-2 rounded-full bg-(--panel-strong)">
+                  <div className="h-2 rounded-full bg-(--warning)" style={{ width: item.width }} />
                 </div>
               </div>
             ))}
@@ -54,7 +54,7 @@ export default function ReportsPage() {
             `${(12 + index * 0.8).toFixed(1)} km/L`,
             `$${(11000 + index * 1450).toLocaleString()}`,
             `$${(15000 + index * 1800).toLocaleString()}`,
-            <span key={`${vehicle.reg}-roi`} className={index % 2 === 0 ? "text-[var(--success)]" : "text-[var(--info)]"}>
+            <span key={`${vehicle.reg}-roi`} className={index % 2 === 0 ? "text-(--success)" : "text-(--info)"}>
               {(8 + index * 1.2).toFixed(1)}%
             </span>,
             <Pill key={`${vehicle.reg}-state`} tone={vehicle.tone}>{vehicle.status}</Pill>
