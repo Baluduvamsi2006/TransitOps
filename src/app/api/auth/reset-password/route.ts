@@ -1,26 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "../../../../lib/prisma";
-import { hashPassword, hashPasswordResetToken } from "../../../../lib/password";
+import { hashPassword, hashPasswordResetCode } from "../../../../lib/password";
 
 type ResetPasswordBody = {
-    token?: string;
+    email?: string;
+    code?: string;
     password?: string;
 };
 
 export async function POST(request: NextRequest) {
     const body = (await request.json()) as ResetPasswordBody;
-    const token = body.token?.trim();
+    const email = body.email?.trim().toLowerCase();
+    const code = body.code?.trim();
     const password = body.password ?? "";
 
-    if (!token || !password) {
-        return NextResponse.json({ message: "Token and new password are required." }, { status: 400 });
+    if (!email || !code || !password) {
+        return NextResponse.json({ message: "Email, code, and new password are required." }, { status: 400 });
     }
 
-    const tokenHash = hashPasswordResetToken(token);
+    const codeHash = hashPasswordResetCode(code);
     const user = await prisma.user.findFirst({
         where: {
-            passwordResetToken: tokenHash,
+            email,
+            passwordResetToken: codeHash,
             passwordResetExpiresAt: {
                 gt: new Date()
             }
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-        return NextResponse.json({ message: "The reset link is invalid or has expired." }, { status: 400 });
+        return NextResponse.json({ message: "The code is invalid or has expired." }, { status: 400 });
     }
 
     await prisma.user.update({
@@ -37,7 +40,9 @@ export async function POST(request: NextRequest) {
             password: hashPassword(password),
             passwordResetToken: null,
             passwordResetExpiresAt: null,
-            passwordChangedAt: new Date()
+            passwordChangedAt: new Date(),
+            failedLoginAttempts: 0,
+            lockedUntil: null
         }
     });
 

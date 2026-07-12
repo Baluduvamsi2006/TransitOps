@@ -10,21 +10,21 @@ export const roleLabels: Record<Role, string> = {
 };
 
 export const roleLandingPaths: Record<Role, string> = {
-    SUPER_ADMIN: "/settings",
-    FLEET_MANAGER: "/fleet",
-    DISPATCHER: "/trips",
-    DRIVER: "/trips",
-    SAFETY_OFFICER: "/drivers",
-    FINANCIAL_ANALYST: "/finance"
+    SUPER_ADMIN: "/",
+    FLEET_MANAGER: "/",
+    DISPATCHER: "/",
+    DRIVER: "/",
+    SAFETY_OFFICER: "/",
+    FINANCIAL_ANALYST: "/"
 };
 
 export const roleAllowedPaths: Record<Role, string[]> = {
-    SUPER_ADMIN: ["/"],
-    FLEET_MANAGER: ["/", "/fleet", "/drivers", "/trips", "/maintenance", "/finance", "/reports"],
-    DISPATCHER: ["/", "/trips"],
-    DRIVER: ["/", "/trips"],
-    SAFETY_OFFICER: ["/", "/drivers"],
-    FINANCIAL_ANALYST: ["/", "/finance", "/reports"]
+    SUPER_ADMIN: ["/", "/settings", "/fleet", "/drivers", "/trips", "/maintenance", "/finance", "/reports", "/users"],
+    FLEET_MANAGER: ["/", "/settings", "/fleet", "/drivers", "/reports"],
+    DISPATCHER: ["/", "/settings", "/fleet", "/trips"],
+    DRIVER: ["/", "/settings", "/trips"],
+    SAFETY_OFFICER: ["/", "/settings", "/drivers", "/trips"],
+    FINANCIAL_ANALYST: ["/", "/settings", "/fleet", "/finance", "/reports"]
 };
 
 export const publicAuthPaths = ["/login", "/forgot-password", "/reset-password"] as const;
