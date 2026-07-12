@@ -1,5 +1,9 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
+import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
 import {
   dashboardKpis,
   maintenanceRows,
@@ -8,7 +12,14 @@ import {
   vehicleStatusBars
 } from "../lib/transitops-data";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+
+  if (!sessionToken) {
+    redirect("/login");
+  }
+
   return (
     <AppShell activePath="/">
       <PageHeader
@@ -41,7 +52,7 @@ export default function Home() {
           <div className="space-y-4">
             {vehicleStatusBars.map((bar) => (
               <div key={bar.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
+                <div className="flex items-center justify-between text-sm text-(--muted)">
                   <span>{bar.label}</span>
                   <span>{bar.count}</span>
                 </div>
