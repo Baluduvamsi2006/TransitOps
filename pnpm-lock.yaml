@@ -45,6 +45,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.21
         version: 10.5.2(postcss@8.5.17)
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       eslint:
         specifier: ^9.30.0
         version: 9.39.5(jiti@2.7.0)
