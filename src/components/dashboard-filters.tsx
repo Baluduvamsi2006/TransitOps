@@ -22,12 +22,12 @@ export function DashboardFilters() {
 
     return (
         <div className="mb-6 animate-fade-up">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">Filters</h3>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-(--muted)">Filters</h3>
             <div className="flex flex-wrap gap-4">
                 <label className="flex flex-col gap-2">
-                    <span className="text-xs text-[var(--muted-2)]">Vehicle Type</span>
+                    <span className="text-xs text-(--muted-2)">Vehicle Type</span>
                     <select
-                        className="rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                        className="rounded-2xl border border-white/8 bg-(--panel) px-4 py-2 text-sm text-white outline-none focus:border-(--accent) transition"
                         value={searchParams.get("type") || "All"}
                         onChange={(e) => router.push(`/?${createQueryString("type", e.target.value)}`)}
                         style={{ colorScheme: "dark" }}
@@ -40,9 +40,9 @@ export function DashboardFilters() {
                 </label>
 
                 <label className="flex flex-col gap-2">
-                    <span className="text-xs text-[var(--muted-2)]">Status</span>
+                    <span className="text-xs text-(--muted-2)">Status</span>
                     <select
-                        className="rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                        className="rounded-2xl border border-white/8 bg-(--panel) px-4 py-2 text-sm text-white outline-none focus:border-(--accent) transition"
                         value={searchParams.get("status") || "All"}
                         onChange={(e) => router.push(`/?${createQueryString("status", e.target.value)}`)}
                         style={{ colorScheme: "dark" }}

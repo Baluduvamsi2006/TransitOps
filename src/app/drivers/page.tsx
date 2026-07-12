@@ -99,7 +99,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       </StatGrid>
 
       {(message || error) && (
-        <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${error ? "border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] text-[var(--danger)]" : "border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] text-[var(--success)]"}`}>
+        <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${error ? "border-[rgba(217,80,63,0.35)] bg-[rgba(217,80,63,0.12)] text-(--danger)" : "border-[rgba(92,191,118,0.35)] bg-[rgba(92,191,118,0.12)] text-(--success)"}`}>
           {error ?? message}
         </div>
       )}
@@ -112,34 +112,34 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               {selectedDriver ? <input type="hidden" name="id" value={selectedDriver.id} /> : null}
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Name</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Name</span>
                 <input
                   name="name"
                   defaultValue={selectedDriver?.name ?? ""}
                   required
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)]"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-(--muted)"
                   placeholder="Alex Verma"
                 />
               </label>
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">License number</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">License number</span>
                 <input
                   name="licenseNumber"
                   defaultValue={selectedDriver?.licenseNumber ?? ""}
                   required
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)]"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-(--muted)"
                   placeholder="DL-99135"
                 />
               </label>
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">License category</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">License category</span>
                 <input
                   name="licenseCategory"
                   defaultValue={selectedDriver?.licenseCategory ?? ""}
                   required
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)]"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-(--muted)"
                   placeholder="LMV"
                 />
               </label>
@@ -152,18 +152,18 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               />
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Num</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Num</span>
                 <input
                   name="contactNumber"
                   defaultValue={selectedDriver?.contactNumber ?? ""}
                   required
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)]"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-(--muted)"
                   placeholder="9876543210"
                 />
               </label>
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Safety score</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Safety score</span>
                 <input
                   type="number"
                   name="safetyScore"
@@ -172,28 +172,28 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
                   step="1"
                   defaultValue={selectedDriver?.safetyScore ?? 100}
                   required
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)]"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-(--muted)"
                 />
               </label>
 
               <label className="space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Status</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Status</span>
                 <select
                   name="status"
                   defaultValue={selectedDriver?.status ?? "AVAILABLE"}
                   style={{ colorScheme: "dark" }}
-                  className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none transition duration-300 focus:border-[var(--accent)]"
+                  className="w-full rounded-2xl border border-white/8 bg-(--panel) px-4 py-3 text-sm text-white outline-none transition duration-300 focus:border-(--accent)"
                 >
-                  <option className="bg-[var(--panel)] text-white" value="AVAILABLE">
+                  <option className="bg-(--panel) text-white" value="AVAILABLE">
                     Available
                   </option>
-                  <option className="bg-[var(--panel)] text-white" value="ON_TRIP">
+                  <option className="bg-(--panel) text-white" value="ON_TRIP">
                     On Trip
                   </option>
-                  <option className="bg-[var(--panel)] text-white" value="OFF_DUTY">
+                  <option className="bg-(--panel) text-white" value="OFF_DUTY">
                     Off Duty
                   </option>
-                  <option className="bg-[var(--panel)] text-white" value="SUSPENDED">
+                  <option className="bg-(--panel) text-white" value="SUSPENDED">
                     Suspended
                   </option>
                 </select>
@@ -202,7 +202,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
                 <button
                   type="submit"
-                  className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
+                  className="rounded-2xl bg-(--accent) px-5 py-3 text-sm font-semibold text-(--accent-ink) transition hover:brightness-110"
                 >
                   {selectedDriver ? "Update driver" : "Create driver"}
                 </button>
@@ -219,26 +219,26 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
           </Panel>
         ) : (
           <Panel title="Driver records access" subtitle="View-only access for your current role.">
-            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-[var(--muted-2)] leading-7">
+            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-(--muted-2) leading-7">
               Only Safety Officers and Fleet Managers can create, update, or delete driver compliance records.
             </div>
           </Panel>
         )}
 
         <Panel title="Dispatch eligibility" subtitle="Only drivers who are available and valid can be selected for trips.">
-          <div className="space-y-4 text-sm leading-7 text-[var(--muted-2)]">
+          <div className="space-y-4 text-sm leading-7 text-(--muted-2)">
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
-              <div className="text-[var(--muted)]">Expiring within 30 days</div>
+              <div className="text-(--muted)">Expiring within 30 days</div>
               <div className="mt-1 text-2xl font-semibold text-white">{expiringSoonDrivers}</div>
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
-              <div className="text-[var(--muted)]">Dispatch-ready pool</div>
+              <div className="text-(--muted)">Dispatch-ready pool</div>
               <div className="mt-1 text-2xl font-semibold text-white">{dispatchReadyDrivers.length}</div>
-              <div className="mt-2 text-sm text-[var(--muted-2)]">Only available drivers with unexpired licenses are eligible for new trips.</div>
+              <div className="mt-2 text-sm text-(--muted-2)">Only available drivers with unexpired licenses are eligible for new trips.</div>
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
-              <div className="text-[var(--muted)]">Status rule</div>
-              <div className="mt-2 text-sm text-[var(--muted-2)]">Suspended or On Trip drivers are blocked from assignment until their state changes back to Available.</div>
+              <div className="text-(--muted)">Status rule</div>
+              <div className="mt-2 text-sm text-(--muted-2)">Suspended or On Trip drivers are blocked from assignment until their state changes back to Available.</div>
             </div>
           </div>
         </Panel>
@@ -247,17 +247,17 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       <Panel title="Driver roster" subtitle="Edit or delete records from the live driver table.">
         <DriverFilters />
         {visibleDrivers.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)] mb-4">No drivers match your search filters.</div>
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-(--muted-2) mb-4">No drivers match your search filters.</div>
         ) : null}
         <Table
           columns={["Driver", "License", "Category", "Expiry", "Safety", "Status", "Actions"]}
           rows={visibleDrivers.map((driver) => [
-            <Link key={`${driver.id}-name`} href={`/drivers?edit=${driver.id}&search=${encodeURIComponent(params.search ?? "")}&status=${encodeURIComponent(params.status ?? "")}`} className="font-medium text-white transition hover:text-[var(--accent)]">
+            <Link key={`${driver.id}-name`} href={`/drivers?edit=${driver.id}&search=${encodeURIComponent(params.search ?? "")}&status=${encodeURIComponent(params.status ?? "")}`} className="font-medium text-white transition hover:text-(--accent)">
               {driver.name}
             </Link>,
             driver.licenseNumber,
             driver.licenseCategory,
-            <span key={`${driver.id}-expiry`} className={driver.licenseExpiryDate.getTime() < nowTime ? "text-[var(--danger)]" : "text-white"}>
+            <span key={`${driver.id}-expiry`} className={driver.licenseExpiryDate.getTime() < nowTime ? "text-(--danger)" : "text-white"}>
               {formatDate(driver.licenseExpiryDate)}
             </span>,
             `${driver.safetyScore.toFixed(0)}%`,
@@ -277,14 +277,14 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
                   <input type="hidden" name="returnTo" value="/drivers" />
                   <button
                     type="submit"
-                    className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[color:rgba(217,80,63,0.18)]"
+                    className="rounded-full border border-[rgba(217,80,63,0.35)] bg-[rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-(--danger) transition hover:bg-[rgba(217,80,63,0.18)]"
                   >
                     Delete
                   </button>
                 </form>
               </div>
             ) : (
-              <span key={`${driver.id}-actions`} className="text-xs text-[var(--muted)] italic">View only</span>
+              <span key={`${driver.id}-actions`} className="text-xs text-(--muted) italic">View only</span>
             )
           ])}
           getRowClassName={(rowIndex) => {
@@ -295,11 +295,11 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
             }
 
             if (highlightedDriverId && driver.id === highlightedDriverId) {
-              return "bg-[color:rgba(224,138,46,0.10)] ring-1 ring-[color:rgba(224,138,46,0.28)]";
+              return "bg-[rgba(224,138,46,0.10)] ring-1 ring-[rgba(224,138,46,0.28)]";
             }
 
             if (searchTerm) {
-              return "bg-[color:rgba(255,255,255,0.02)]";
+              return "bg-[rgba(255,255,255,0.02)]";
             }
 
             return "";

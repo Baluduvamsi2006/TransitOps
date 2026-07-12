@@ -134,16 +134,16 @@ export default async function Home({ searchParams }: DashboardProps) {
   ];
 
   const vehicleStatusBars = [
-    { label: "Available", count: available, pct: totalActive > 0 ? (available / totalActive) * 100 : 0, fill: "bg-[var(--success)]" },
-    { label: "On Trip", count: onTrip, pct: totalActive > 0 ? (onTrip / totalActive) * 100 : 0, fill: "bg-[var(--info)]" },
-    { label: "In Shop", count: inShop, pct: totalActive > 0 ? (inShop / totalActive) * 100 : 0, fill: "bg-[var(--warning)]" },
-    { label: "Retired", count: retired, pct: totalVehicles > 0 ? (retired / totalVehicles) * 100 : 0, fill: "bg-[var(--danger)]" }
+    { label: "Available", count: available, pct: totalActive > 0 ? (available / totalActive) * 100 : 0, fill: "bg-(--success)" },
+    { label: "On Trip", count: onTrip, pct: totalActive > 0 ? (onTrip / totalActive) * 100 : 0, fill: "bg-(--info)" },
+    { label: "In Shop", count: inShop, pct: totalActive > 0 ? (inShop / totalActive) * 100 : 0, fill: "bg-(--warning)" },
+    { label: "Retired", count: retired, pct: totalVehicles > 0 ? (retired / totalVehicles) * 100 : 0, fill: "bg-(--danger)" }
   ];
 
   const costBreakdown = [
-    { label: "Fuel", value: totalFuel, pct: totalOpCost > 0 ? (totalFuel / totalOpCost) * 100 : 0, fill: "bg-[var(--accent)]" },
-    { label: "Maintenance", value: totalMaint, pct: totalOpCost > 0 ? (totalMaint / totalOpCost) * 100 : 0, fill: "bg-[var(--warning)]" },
-    { label: "Other", value: totalOther, pct: totalOpCost > 0 ? (totalOther / totalOpCost) * 100 : 0, fill: "bg-[var(--info)]" }
+    { label: "Fuel", value: totalFuel, pct: totalOpCost > 0 ? (totalFuel / totalOpCost) * 100 : 0, fill: "bg-(--accent)" },
+    { label: "Maintenance", value: totalMaint, pct: totalOpCost > 0 ? (totalMaint / totalOpCost) * 100 : 0, fill: "bg-(--warning)" },
+    { label: "Other", value: totalOther, pct: totalOpCost > 0 ? (totalOther / totalOpCost) * 100 : 0, fill: "bg-(--info)" }
   ];
 
   return (
@@ -166,18 +166,18 @@ export default async function Home({ searchParams }: DashboardProps) {
       <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr] mb-5">
         <Panel title="Recent trips" subtitle="Latest dispatch activity and completion status">
           {trips.length === 0 ? (
-            <div className="text-sm text-[var(--muted)] py-4">No trips yet. <Link href="/trips" className="text-[var(--accent)] hover:underline">Create one →</Link></div>
+            <div className="text-sm text-(--muted) py-4">No trips yet. <Link href="/trips" className="text-(--accent) hover:underline">Create one →</Link></div>
           ) : (
             <Table
               columns={["Route", "Vehicle", "Driver", "Distance", "Status"]}
               rows={trips.slice(0, 6).map((trip) => [
                 <div key={`r-${trip.id}`}>
                   <div className="font-medium text-white text-sm">{trip.source} → {trip.destination}</div>
-                  <div className="text-[10px] text-[var(--muted)] font-mono">{trip.id.substring(0, 8)}</div>
+                  <div className="text-[10px] text-(--muted) font-mono">{trip.id.substring(0, 8)}</div>
                 </div>,
                 <div key={`v-${trip.id}`}>
                   <div className="text-sm">{trip.vehicle.nameModel}</div>
-                  <div className="text-xs text-[var(--muted)]">{trip.vehicle.registrationNumber}</div>
+                  <div className="text-xs text-(--muted)">{trip.vehicle.registrationNumber}</div>
                 </div>,
                 <span key={`d-${trip.id}`} className="text-sm">{trip.driver.name}</span>,
                 `${trip.plannedDistance} km`,
@@ -191,7 +191,7 @@ export default async function Home({ searchParams }: DashboardProps) {
           <div className="space-y-4 mb-5">
             {vehicleStatusBars.map((bar) => (
               <div key={bar.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
+                <div className="flex items-center justify-between text-sm text-(--muted)">
                   <span>{bar.label}</span>
                   <span className="font-mono">{bar.count}</span>
                 </div>
@@ -202,18 +202,18 @@ export default async function Home({ searchParams }: DashboardProps) {
             ))}
           </div>
           <div className="border-t border-white/8 pt-4">
-            <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+            <div className="flex items-center justify-between text-xs text-(--muted)">
               <span>Total Fleet</span>
               <span className="font-mono font-semibold text-white">{totalVehicles} vehicles</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-[var(--muted)] mt-1">
+            <div className="flex items-center justify-between text-xs text-(--muted) mt-1">
               <span>Total Drivers</span>
               <span className="font-mono font-semibold text-white">{totalDrivers} drivers ({availableDrivers} available)</span>
             </div>
             {suspendedDrivers > 0 && (
               <div className="flex items-center justify-between text-xs mt-1">
-                <span className="text-[var(--danger)]">Suspended Drivers</span>
-                <span className="font-mono font-semibold text-[var(--danger)]">{suspendedDrivers}</span>
+                <span className="text-(--danger)">Suspended Drivers</span>
+                <span className="font-mono font-semibold text-(--danger)">{suspendedDrivers}</span>
               </div>
             )}
           </div>
@@ -227,7 +227,7 @@ export default async function Home({ searchParams }: DashboardProps) {
             {costBreakdown.map((item) => (
               <div key={item.label} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[var(--muted)]">{item.label}</span>
+                  <span className="text-(--muted)">{item.label}</span>
                   <span className="font-mono text-white">{fmtRupees(item.value)}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/6">
@@ -238,16 +238,16 @@ export default async function Home({ searchParams }: DashboardProps) {
           </div>
           <div className="border-t border-white/8 pt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--muted)]">Total Cost</span>
-              <span className="font-mono text-[var(--warning)] font-semibold">{fmtRupees(totalOpCost)}</span>
+              <span className="text-(--muted)">Total Cost</span>
+              <span className="font-mono text-(--warning) font-semibold">{fmtRupees(totalOpCost)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--muted)]">Total Revenue</span>
-              <span className="font-mono text-[var(--success)] font-semibold">{fmtRupees(totalRevenue)}</span>
+              <span className="text-(--muted)">Total Revenue</span>
+              <span className="font-mono text-(--success) font-semibold">{fmtRupees(totalRevenue)}</span>
             </div>
             <div className="flex items-center justify-between text-sm border-t border-white/8 pt-2">
               <span className="font-semibold text-white">Net Profit</span>
-              <span className={`font-mono font-bold ${netProfit >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+              <span className={`font-mono font-bold ${netProfit >= 0 ? "text-(--success)" : "text-(--danger)"}`}>
                 {fmtRupees(netProfit)}
               </span>
             </div>
@@ -256,14 +256,14 @@ export default async function Home({ searchParams }: DashboardProps) {
 
         <Panel title="Maintenance queue" subtitle="Active service records that keep vehicles in shop">
           {maintenanceQueue.length === 0 ? (
-            <div className="text-sm text-[var(--muted)] py-4">✅ No active maintenance logs — all vehicles are clear.</div>
+            <div className="text-sm text-(--muted) py-4">✅ No active maintenance logs — all vehicles are clear.</div>
           ) : (
             <Table
               columns={["Vehicle", "Service", "Date", "Cost", "State"]}
               rows={maintenanceQueue.map((record) => [
                 <div key={`mv-${record.id}`}>
                   <div className="font-semibold text-white text-sm">{record.vehicle.nameModel}</div>
-                  <div className="text-xs text-[var(--muted)]">{record.vehicle.registrationNumber}</div>
+                  <div className="text-xs text-(--muted)">{record.vehicle.registrationNumber}</div>
                 </div>,
                 record.description,
                 new Date(record.date).toLocaleDateString("en-IN"),
@@ -278,12 +278,12 @@ export default async function Home({ searchParams }: DashboardProps) {
       {/* Row 4: Fleet snapshot */}
       <Panel title="Fleet snapshot" subtitle="All vehicles with current status">
         {vehicles.length === 0 ? (
-          <div className="text-sm text-[var(--muted)] py-4">No vehicles. <Link href="/fleet" className="text-[var(--accent)] hover:underline">Register one →</Link></div>
+          <div className="text-sm text-(--muted) py-4">No vehicles. <Link href="/fleet" className="text-(--accent) hover:underline">Register one →</Link></div>
         ) : (
           <Table
             columns={["Reg No.", "Vehicle", "Type", "Capacity", "Odometer", "Status"]}
             rows={vehicles.map((vehicle) => [
-              <span key={`r-${vehicle.id}`} className="font-mono text-xs text-[var(--muted)]">{vehicle.registrationNumber}</span>,
+              <span key={`r-${vehicle.id}`} className="font-mono text-xs text-(--muted)">{vehicle.registrationNumber}</span>,
               <span key={`n-${vehicle.id}`} className="font-medium text-white">{vehicle.nameModel}</span>,
               vehicle.type,
               `${vehicle.maxLoadCapacity} kg`,

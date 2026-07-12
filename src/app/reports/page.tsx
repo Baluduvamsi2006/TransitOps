@@ -245,19 +245,19 @@ export default async function ReportsPage(props: ReportsPageProps) {
       label: "Fuel",
       value: totalFuelCost,
       pct: overallOpCost > 0 ? (totalFuelCost / overallOpCost) * 100 : 0,
-      color: "bg-[var(--accent)]",
+      color: "bg-(--accent)",
     },
     {
       label: "Maintenance",
       value: totalMaintCost,
       pct: overallOpCost > 0 ? (totalMaintCost / overallOpCost) * 100 : 0,
-      color: "bg-[var(--warning)]",
+      color: "bg-(--warning)",
     },
     {
       label: "Other",
       value: totalOtherCost,
       pct: overallOpCost > 0 ? (totalOtherCost / overallOpCost) * 100 : 0,
-      color: "bg-[var(--info)]",
+      color: "bg-(--info)",
     },
   ];
 
@@ -343,10 +343,10 @@ export default async function ReportsPage(props: ReportsPageProps) {
             {monthlyBars.map((bar) => (
               <div key={bar.label} className="flex flex-1 flex-col items-center gap-2 group relative">
                 <div
-                  className="w-full rounded-t-xl bg-[var(--accent)] hover:brightness-110 transition-all duration-500 min-h-[4px]"
+                  className="w-full rounded-t-xl bg-(--accent) hover:brightness-110 transition-all duration-500 min-h-[4px]"
                   style={{ height: bar.height }}
                 />
-                <span className="text-xs text-[var(--muted)]">{bar.label}</span>
+                <span className="text-xs text-(--muted)">{bar.label}</span>
                 {/* Tooltip */}
                 <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 whitespace-nowrap bg-[#161618] border border-white/10 rounded-xl px-3 py-1.5 text-[11px] font-medium text-white shadow-xl transition-all duration-200 z-10">
                   {fmtRupees(bar.value)}
@@ -361,10 +361,10 @@ export default async function ReportsPage(props: ReportsPageProps) {
             {costBreakdown.map((item) => (
               <div key={item.label} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[var(--muted)] font-medium">{item.label}</span>
+                  <span className="text-(--muted) font-medium">{item.label}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-white font-mono text-xs">{fmtRupees(item.value)}</span>
-                    <span className="text-[var(--muted-2)] text-xs">({item.pct.toFixed(1)}%)</span>
+                    <span className="text-(--muted-2) text-xs">({item.pct.toFixed(1)}%)</span>
                   </div>
                 </div>
                 <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
@@ -378,16 +378,16 @@ export default async function ReportsPage(props: ReportsPageProps) {
 
             <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[var(--muted)]">Total Spend</span>
+                <span className="text-(--muted)">Total Spend</span>
                 <span className="text-white font-semibold">{fmtRupees(overallOpCost)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[var(--muted)]">Total Revenue</span>
-                <span className="text-[var(--success)] font-semibold">{fmtRupees(totalRevenueEarned)}</span>
+                <span className="text-(--muted)">Total Revenue</span>
+                <span className="text-(--success) font-semibold">{fmtRupees(totalRevenueEarned)}</span>
               </div>
               <div className="border-t border-white/8 pt-2 flex items-center justify-between text-sm">
-                <span className="text-[var(--muted)]">Net Profit</span>
-                <span className={`font-bold ${totalRevenueEarned - overallOpCost >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+                <span className="text-(--muted)">Net Profit</span>
+                <span className={`font-bold ${totalRevenueEarned - overallOpCost >= 0 ? "text-(--success)" : "text-(--danger)"}`}>
                   {fmtRupees(totalRevenueEarned - overallOpCost)}
                 </span>
               </div>
@@ -401,17 +401,17 @@ export default async function ReportsPage(props: ReportsPageProps) {
         <Panel title="Top cost vehicles" subtitle="Assets with the highest total operational spend.">
           <div className="space-y-4">
             {topCostBars.length === 0 ? (
-              <div className="text-sm text-[var(--muted-2)]">No vehicle cost data for the selected period.</div>
+              <div className="text-sm text-(--muted-2)">No vehicle cost data for the selected period.</div>
             ) : (
               topCostBars.map((item) => (
                 <div key={item.label} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm text-[var(--muted)]">
+                  <div className="flex items-center justify-between text-sm text-(--muted)">
                     <span className="truncate pr-2 font-medium">{item.label}</span>
                     <span className="text-white font-mono shrink-0">{item.cost}</span>
                   </div>
                   <div className="h-2 rounded-full bg-white/5 overflow-hidden">
                     <div
-                      className="h-2 rounded-full bg-[var(--warning)] transition-all duration-500"
+                      className="h-2 rounded-full bg-(--warning) transition-all duration-500"
                       style={{ width: item.width }}
                     />
                   </div>
@@ -423,7 +423,7 @@ export default async function ReportsPage(props: ReportsPageProps) {
 
         <Panel title="Driver performance" subtitle="Trips completed and revenue generated per driver.">
           {driverStats.length === 0 ? (
-            <div className="text-sm text-[var(--muted-2)]">No driver data available.</div>
+            <div className="text-sm text-(--muted-2)">No driver data available.</div>
           ) : (
             <Table
               columns={["Driver", "Trips", "Revenue", "Safety", "Status"]}
@@ -433,7 +433,7 @@ export default async function ReportsPage(props: ReportsPageProps) {
                 <span key={`${d.id}-rev`} className="font-mono text-sm">{fmtRupees(d.revenue)}</span>,
                 <span
                   key={`${d.id}-safety`}
-                  className={`font-semibold text-sm ${d.safetyScore >= 90 ? "text-[var(--success)]" : d.safetyScore >= 70 ? "text-[var(--warning)]" : "text-[var(--danger)]"}`}
+                  className={`font-semibold text-sm ${d.safetyScore >= 90 ? "text-(--success)" : d.safetyScore >= 70 ? "text-(--warning)" : "text-(--danger)"}`}
                 >
                   {d.safetyScore.toFixed(0)}
                 </span>,
@@ -450,14 +450,14 @@ export default async function ReportsPage(props: ReportsPageProps) {
       <div className="mb-6">
       <Panel title="Per-vehicle analytics" subtitle="Full breakdown of efficiency, costs, revenue, and ROI per asset.">
         {vehicleStats.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No vehicles found for the selected filters.</div>
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-(--muted-2)">No vehicles found for the selected filters.</div>
         ) : (
           <Table
             columns={["Vehicle", "Trips", "Fuel Eff.", "Op Cost", "Revenue", "Profit", "ROI", "State"]}
             rows={vehicleStats.map((vehicle) => [
               <div key={`${vehicle.id}-v`}>
                 <div className="font-semibold text-white">{vehicle.nameModel}</div>
-                <div className="text-xs text-[var(--muted)]">{vehicle.registrationNumber}</div>
+                <div className="text-xs text-(--muted)">{vehicle.registrationNumber}</div>
               </div>,
               <span key={`${vehicle.id}-trips`} className="font-mono">{vehicle.trips}</span>,
               vehicle.efficiency > 0 ? `${vehicle.efficiency.toFixed(1)} km/L` : "—",
@@ -465,13 +465,13 @@ export default async function ReportsPage(props: ReportsPageProps) {
               fmtRupees(vehicle.revenue),
               <span
                 key={`${vehicle.id}-profit`}
-                className={vehicle.profit >= 0 ? "text-[var(--success)] font-medium" : "text-[var(--danger)] font-medium"}
+                className={vehicle.profit >= 0 ? "text-(--success) font-medium" : "text-(--danger) font-medium"}
               >
                 {fmtRupees(vehicle.profit)}
               </span>,
               <span
                 key={`${vehicle.id}-roi`}
-                className={vehicle.roi >= 0 ? "text-[var(--success)] font-medium" : "text-[var(--danger)] font-medium"}
+                className={vehicle.roi >= 0 ? "text-(--success) font-medium" : "text-(--danger) font-medium"}
               >
                 {vehicle.roi.toFixed(1)}%
               </span>,
@@ -487,20 +487,20 @@ export default async function ReportsPage(props: ReportsPageProps) {
       {/* Recent trips breakdown */}
       <Panel title="Recent completed trips" subtitle="Latest trip records with per-trip revenue.">
         {recentTrips.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No completed trips found for the selected filters.</div>
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-(--muted-2)">No completed trips found for the selected filters.</div>
         ) : (
           <Table
             columns={["Route", "Vehicle", "Driver", "Distance", "Cargo", "Revenue", "Completed"]}
             rows={recentTrips.map((t) => [
               <div key={`${t.id}-route`}>
                 <div className="font-medium text-white text-sm">{t.source}</div>
-                <div className="text-xs text-[var(--muted)]">→ {t.destination}</div>
+                <div className="text-xs text-(--muted)">→ {t.destination}</div>
               </div>,
               <span key={`${t.id}-veh`} className="text-sm">{t.vehicle}</span>,
               <span key={`${t.id}-drv`} className="text-sm">{t.driver}</span>,
               `${t.distance.toFixed(0)} km`,
               `${t.cargo.toFixed(0)} kg`,
-              <span key={`${t.id}-rev`} className="text-[var(--success)] font-mono font-medium text-sm">
+              <span key={`${t.id}-rev`} className="text-(--success) font-mono font-medium text-sm">
                 {fmtRupees(t.revenue)}
               </span>,
               formatDate(t.completedAt),

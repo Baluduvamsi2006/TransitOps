@@ -107,7 +107,7 @@ export function SuperAdminUsersPanel() {
     return (
         <PanelBlock>
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-                <section className="rounded-[1.6rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:p-6">
+                <section className="rounded-[1.6rem] border border-white/8 bg-(--panel) p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:p-6">
                     <div className="mb-4">
                         <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-(--muted)">Super Admin</h2>
                         <p className="mt-2 max-w-3xl text-sm leading-6 text-(--muted-2)">Create DB users directly from the website.</p>
@@ -145,7 +145,7 @@ export function SuperAdminUsersPanel() {
                     </form>
                 </section>
 
-                <section className="rounded-[1.6rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:p-6">
+                <section className="rounded-[1.6rem] border border-white/8 bg-(--panel) p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:p-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
                             <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-(--muted)">Existing users</h2>

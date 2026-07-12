@@ -35,10 +35,10 @@ export const recentTrips = [
 ] as const;
 
 export const vehicleStatusBars = [
-  { label: "Available", count: 16, width: "74%", fill: "bg-[var(--success)]" },
-  { label: "On Trip", count: 9, width: "42%", fill: "bg-[var(--info)]" },
-  { label: "In Shop", count: 5, width: "23%", fill: "bg-[var(--warning)]" },
-  { label: "Retired", count: 2, width: "10%", fill: "bg-[var(--danger)]" }
+  { label: "Available", count: 16, width: "74%", fill: "bg-(--success)" },
+  { label: "On Trip", count: 9, width: "42%", fill: "bg-(--info)" },
+  { label: "In Shop", count: 5, width: "23%", fill: "bg-(--warning)" },
+  { label: "Retired", count: 2, width: "10%", fill: "bg-(--danger)" }
 ] as const;
 
 export const vehicleRows = [

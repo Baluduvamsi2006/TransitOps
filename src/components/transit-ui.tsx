@@ -73,10 +73,10 @@ type PillProps = {
 export function Pill({ tone = "muted", children }: PillProps) {
   const classes = {
     accent: "bg-(--accent-soft) text-(--accent) border-[color:var(--accent-2)]",
-    success: "bg-[color-mix(in_srgb,var(--success)_18%,transparent)] text-(--success) border-[color:rgba(63,174,108,0.35)]",
-    warning: "bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] text-(--warning) border-[color:rgba(224,160,46,0.35)]",
-    info: "bg-[color-mix(in_srgb,var(--info)_18%,transparent)] text-(--info) border-[color:rgba(79,143,209,0.35)]",
-    danger: "bg-[color-mix(in_srgb,var(--danger)_18%,transparent)] text-(--danger) border-[color:rgba(217,80,63,0.35)]",
+    success: "bg-[color-mix(in_srgb,var(--success)_18%,transparent)] text-(--success) border-[rgba(63,174,108,0.35)]",
+    warning: "bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] text-(--warning) border-[rgba(224,160,46,0.35)]",
+    info: "bg-[color-mix(in_srgb,var(--info)_18%,transparent)] text-(--info) border-[rgba(79,143,209,0.35)]",
+    danger: "bg-[color-mix(in_srgb,var(--danger)_18%,transparent)] text-(--danger) border-[rgba(217,80,63,0.35)]",
     muted: "bg-white/6 text-(--muted) border-white/8"
   }[tone];
 

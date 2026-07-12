@@ -10,12 +10,12 @@ export function AuthFrame({ eyebrow, title, description, bullets, children }: Au
     return (
         <div className="min-h-screen bg-(--bg) text-(--text) lg:grid lg:grid-cols-[1.05fr_0.95fr]">
             <section className="relative overflow-hidden border-b border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(224,138,46,0.2),transparent_30%),linear-gradient(180deg,#1b1712_0%,#13110d_100%)] px-6 py-8 lg:border-b-0 lg:border-r lg:px-10 lg:py-10">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-70" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-(--accent) to-transparent opacity-70" />
                 <div className="absolute -right-24 top-16 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(224,138,46,0.18),transparent_68%)] blur-2xl" />
                 <div className="relative flex h-full max-w-xl flex-col justify-between gap-10">
                     <div className="space-y-8">
                         <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-(--muted)">
-                            <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+                            <span className="h-2 w-2 rounded-full bg-(--accent)" />
                             TransitOps RBAC
                         </div>
 

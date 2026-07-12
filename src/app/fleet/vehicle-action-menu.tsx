@@ -119,37 +119,37 @@ export function VehicleActionMenu({ vehicle }: { vehicle: any }) {
 
       {isEditModalOpen && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[var(--panel)] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-(--panel) p-6 shadow-2xl">
             <h3 className="text-xl font-semibold text-white mb-4">Edit Vehicle Details</h3>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Model Name</label>
+                <label className="mb-2 block text-sm font-medium text-(--muted)">Model Name</label>
                 <input
                   name="nameModel"
                   defaultValue={vehicle.nameModel}
                   required
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-(--muted) focus:border-(--accent) focus:outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Capacity (kg)</label>
+                  <label className="mb-2 block text-sm font-medium text-(--muted)">Capacity (kg)</label>
                   <input
                     name="maxLoadCapacity"
                     type="number"
                     defaultValue={vehicle.maxLoadCapacity}
                     required
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-(--muted) focus:border-(--accent) focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Odometer (km)</label>
+                  <label className="mb-2 block text-sm font-medium text-(--muted)">Odometer (km)</label>
                   <input
                     name="odometer"
                     type="number"
                     defaultValue={vehicle.odometer}
                     required
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-(--muted) focus:border-(--accent) focus:outline-none"
                   />
                 </div>
               </div>
@@ -164,7 +164,7 @@ export function VehicleActionMenu({ vehicle }: { vehicle: any }) {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-bold text-[var(--accent-ink)] hover:brightness-110 transition-all"
+                  className="flex-1 rounded-xl bg-(--accent) px-4 py-3 text-sm font-bold text-(--accent-ink) hover:brightness-110 transition-all"
                 >
                   {isPending ? "Saving..." : "Save Changes"}
                 </button>
@@ -176,7 +176,7 @@ export function VehicleActionMenu({ vehicle }: { vehicle: any }) {
 
       {isDocsModalOpen && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[var(--panel)] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-(--panel) p-6 shadow-2xl">
             <h3 className="text-xl font-semibold text-white mb-4">Manage Documents</h3>
             
             {/* List Existing Documents */}
@@ -209,14 +209,14 @@ export function VehicleActionMenu({ vehicle }: { vehicle: any }) {
                   name="docName"
                   placeholder="Document Name (e.g. Insurance)"
                   required
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none mb-3"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-(--muted) focus:border-(--accent) focus:outline-none mb-3"
                 />
                 <input
                   name="docUrl"
                   type="url"
                   placeholder="URL (e.g. Google Drive Link)"
                   required
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-(--muted) focus:border-(--accent) focus:outline-none"
                 />
               </div>
               <div className="mt-4 flex gap-3">
@@ -230,7 +230,7 @@ export function VehicleActionMenu({ vehicle }: { vehicle: any }) {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-[var(--accent-ink)] hover:brightness-110 transition-all"
+                  className="flex-1 rounded-xl bg-(--accent) px-4 py-2.5 text-sm font-bold text-(--accent-ink) hover:brightness-110 transition-all"
                 >
                   {isPending ? "Adding..." : "Add Link"}
                 </button>

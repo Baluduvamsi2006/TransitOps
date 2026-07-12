@@ -54,14 +54,14 @@ export default async function MaintenancePage() {
           {canManage ? (
             <form action={createMaintenanceLog} className="grid gap-4 md:grid-cols-2">
               <label className="block space-y-2 md:col-span-2">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Vehicle</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Vehicle</span>
                 <input
                   list="available-vehicles"
                   name="vehicleExt"
                   required
                   placeholder="Search available or in-shop vehicles..."
                   autoComplete="off"
-                  className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                  className="w-full rounded-2xl border border-white/8 bg-(--panel) px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                 />
                 <datalist id="available-vehicles">
                   {availableVehicles.map((v) => (
@@ -73,17 +73,17 @@ export default async function MaintenancePage() {
               </label>
 
               <label className="block space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Service type</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Service type</span>
                 <input
                   name="description"
                   required
                   placeholder="e.g. Oil Change, Brake Repair"
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                 />
               </label>
 
               <label className="block space-y-2 md:col-span-1">
-                <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Cost ($)</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Cost ($)</span>
                 <input
                   type="number"
                   name="cost"
@@ -91,27 +91,27 @@ export default async function MaintenancePage() {
                   step="0.01"
                   required
                   placeholder="0.00"
-                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                  className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                 />
               </label>
 
               <div className="md:col-span-2 pt-2">
                 <SubmitButton
                   label="Save Log"
-                  className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
+                  className="rounded-2xl bg-(--accent) px-5 py-3 text-sm font-semibold text-(--accent-ink) hover:brightness-110 transition"
                 />
               </div>
             </form>
           ) : (
-            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-[var(--muted-2)] leading-7">
+            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-(--muted-2) leading-7">
               You have read-only access to the maintenance panel.
             </div>
           )}
         </Panel>
 
         <Panel title="Service notes" subtitle="These operational rules are strictly enforced by the backend database connection.">
-          <div className="space-y-4 text-sm leading-7 text-[var(--muted-2)]">
-            <div className="rounded-2xl border border-[color:rgba(224,160,46,0.35)] bg-[color:rgba(224,160,46,0.12)] p-4 text-[var(--warning)]">
+          <div className="space-y-4 text-sm leading-7 text-(--muted-2)">
+            <div className="rounded-2xl border border-[rgba(224,160,46,0.35)] bg-[rgba(224,160,46,0.12)] p-4 text-(--warning)">
               <strong className="block text-white mb-1">Dispatch Lock</strong>
               Logging a vehicle automatically sets its status to <Pill tone="warning">IN SHOP</Pill>, preventing dispatch.
             </div>
@@ -124,7 +124,7 @@ export default async function MaintenancePage() {
 
       <Panel title="Service log" subtitle="Current and historical maintenance records shown together for quick oversight.">
         {logs.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)] mb-4">
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-(--muted-2) mb-4">
             No maintenance records found.
           </div>
         ) : (
@@ -133,7 +133,7 @@ export default async function MaintenancePage() {
             rows={logs.map((record) => [
               <div key={`v-${record.id}`}>
                 <div className="font-semibold text-white">{record.vehicle.nameModel}</div>
-                <div className="text-xs text-[var(--muted)]">{record.vehicle.registrationNumber}</div>
+                <div className="text-xs text-(--muted)">{record.vehicle.registrationNumber}</div>
               </div>,
               record.description,
               new Date(record.date).toLocaleDateString(),
@@ -147,11 +147,11 @@ export default async function MaintenancePage() {
                     <input type="hidden" name="id" value={record.id} />
                     <SubmitButton
                       label="Close Service"
-                      className="rounded-full border border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--success)] hover:bg-[color:rgba(92,191,118,0.18)] transition"
+                      className="rounded-full border border-[rgba(92,191,118,0.35)] bg-[rgba(92,191,118,0.12)] px-3 py-1.5 text-xs font-semibold text-(--success) hover:bg-[rgba(92,191,118,0.18)] transition"
                     />
                   </form>
                 ) : (
-                  <span className="text-xs text-[var(--muted)] italic">Archived</span>
+                  <span className="text-xs text-(--muted) italic">Archived</span>
                 )}
               </div>
             ])}

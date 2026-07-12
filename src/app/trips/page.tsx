@@ -124,7 +124,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
       </StatGrid>
 
       {(message || error) && (
-        <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${error ? "border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] text-[var(--danger)]" : "border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] text-[var(--success)]"}`}>
+        <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${error ? "border-[rgba(217,80,63,0.35)] bg-[rgba(217,80,63,0.12)] text-(--danger)" : "border-[rgba(92,191,118,0.35)] bg-[rgba(92,191,118,0.12)] text-(--success)"}`}>
           {error ?? message}
         </div>
       )}
@@ -139,7 +139,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <input type="hidden" name="id" value={targetCompleteTrip.id} />
                 
                 <label className="block space-y-2">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">
                     Final Odometer (km) (Current: {targetCompleteTrip.vehicle.odometer} km)
                   </span>
                   <input
@@ -148,32 +148,32 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                     min={targetCompleteTrip.vehicle.odometer}
                     defaultValue={targetCompleteTrip.vehicle.odometer + targetCompleteTrip.plannedDistance}
                     required
-                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   />
                 </label>
 
                 <div className="grid grid-cols-2 gap-4">
                   <label className="block space-y-2">
-                    <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Fuel Liters</span>
+                    <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Fuel Liters</span>
                     <input
                       type="number"
                       name="fuelLiters"
                       min="0"
                       step="0.1"
                       defaultValue="0"
-                      className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                      className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                     />
                   </label>
 
                   <label className="block space-y-2">
-                    <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Fuel Cost ($)</span>
+                    <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Fuel Cost ($)</span>
                     <input
                       type="number"
                       name="fuelCost"
                       min="0"
                       step="0.01"
                       defaultValue="0"
-                      className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                      className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                     />
                   </label>
                 </div>
@@ -181,7 +181,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <div className="flex gap-3 pt-2">
                   <SubmitButton
                     label="Complete Trip"
-                    className="rounded-2xl bg-[var(--success)] px-5 py-3 text-sm font-semibold text-white hover:brightness-110 transition"
+                    className="rounded-2xl bg-(--success) px-5 py-3 text-sm font-semibold text-white hover:brightness-110 transition"
                   />
                   <Link
                     href="/trips"
@@ -196,32 +196,32 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
             <Panel title="Draft a new trip" subtitle="Assign available vehicles and drivers that satisfy operational rules.">
               <form action={createTrip} className="grid gap-4 md:grid-cols-2">
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Source</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Source</span>
                   <input
                     name="source"
                     required
                     placeholder="Northbridge Depot"
-                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   />
                 </label>
 
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Destination</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Destination</span>
                   <input
                     name="destination"
                     required
                     placeholder="Ashapiladad Hub"
-                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   />
                 </label>
 
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Vehicle</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Vehicle</span>
                   <select
                     name="vehicleId"
                     required
                     style={{ colorScheme: "dark" }}
-                    className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-(--panel) px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   >
                     <option value="">Select available vehicle...</option>
                     {availableVehicles.map((vehicle) => (
@@ -233,12 +233,12 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 </label>
 
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Driver</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Driver</span>
                   <select
                     name="driverId"
                     required
                     style={{ colorScheme: "dark" }}
-                    className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-(--panel) px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   >
                     <option value="">Select available driver...</option>
                     {availableDrivers.map((driver) => (
@@ -250,26 +250,26 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 </label>
 
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Cargo Weight (kg)</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Cargo Weight (kg)</span>
                   <input
                     type="number"
                     name="cargoWeight"
                     required
                     min="0"
                     placeholder="450"
-                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   />
                 </label>
 
                 <label className="block space-y-2 md:col-span-1">
-                  <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Planned Distance (km)</span>
+                  <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Planned Distance (km)</span>
                   <input
                     type="number"
                     name="plannedDistance"
                     required
                     min="0"
                     placeholder="96"
-                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none focus:border-(--accent) transition"
                   />
                 </label>
 
@@ -278,7 +278,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <div className="md:col-span-2 pt-2">
                   <SubmitButton
                     label="Draft Trip"
-                    className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
+                    className="rounded-2xl bg-(--accent) px-5 py-3 text-sm font-semibold text-(--accent-ink) hover:brightness-110 transition"
                   />
                 </div>
               </form>
@@ -286,14 +286,14 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
           )
         ) : (
           <Panel title="Draft Access Restricted" subtitle="Only Dispatchers and Fleet Managers can create or manage trips.">
-            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-[var(--muted-2)] leading-7">
+            <div className="rounded-2xl border border-white/8 bg-white/6 p-5 text-sm text-(--muted-2) leading-7">
               Your active role has view-only access to trips. You can review current dispatches and status logs in the roster below.
             </div>
           </Panel>
         )}
 
         <Panel title="Operational rules" subtitle="These requirements are enforced on dispatch and completion.">
-          <div className="space-y-4 text-sm leading-7 text-[var(--muted-2)]">
+          <div className="space-y-4 text-sm leading-7 text-(--muted-2)">
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
               <span className="font-semibold text-white">Asset Lock</span>: Dispatching flips both driver and vehicle status to <Pill tone="info">ON TRIP</Pill> and completes restore them to <Pill tone="success">AVAILABLE</Pill>.
             </div>
@@ -310,18 +310,18 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
       <Panel title="Live trips" subtitle="Draft, dispatched, completed, and cancelled trips.">
         <TripFilters />
         {visibleTrips.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)] mb-4">No trips match your search filters.</div>
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-(--muted-2) mb-4">No trips match your search filters.</div>
         ) : null}
         <Table
           columns={["Route", "Vehicle", "Driver", "Weight", "Distance", "Status", "Actions"]}
           rows={visibleTrips.map((trip) => [
             <div key={`${trip.id}-route`}>
               <div className="font-semibold text-white">{trip.source} → {trip.destination}</div>
-              <div className="text-[10px] text-[var(--muted)] font-mono">{trip.id}</div>
+              <div className="text-[10px] text-(--muted) font-mono">{trip.id}</div>
             </div>,
             <div key={`${trip.id}-vehicle`}>
               <div>{trip.vehicle.nameModel}</div>
-              <div className="text-xs text-[var(--muted)]">{trip.vehicle.registrationNumber}</div>
+              <div className="text-xs text-(--muted)">{trip.vehicle.registrationNumber}</div>
             </div>,
             <div key={`${trip.id}-driver`}>
               <div>{trip.driver.name}</div>
@@ -336,14 +336,14 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                     <input type="hidden" name="id" value={trip.id} />
                     <SubmitButton
                       label="Dispatch"
-                      className="rounded-full border border-[color:rgba(79,143,209,0.35)] bg-[color:rgba(79,143,209,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--info)] hover:bg-[color:rgba(79,143,209,0.18)] transition"
+                      className="rounded-full border border-[rgba(79,143,209,0.35)] bg-[rgba(79,143,209,0.12)] px-3 py-1.5 text-xs font-semibold text-(--info) hover:bg-[rgba(79,143,209,0.18)] transition"
                     />
                   </form>
                   <form action={cancelTrip}>
                     <input type="hidden" name="id" value={trip.id} />
                     <SubmitButton
                       label="Cancel"
-                      className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] hover:bg-[color:rgba(217,80,63,0.18)] transition"
+                      className="rounded-full border border-[rgba(217,80,63,0.35)] bg-[rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-(--danger) hover:bg-[rgba(217,80,63,0.18)] transition"
                     />
                   </form>
                 </>
@@ -352,7 +352,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <>
                   <Link
                     href={`/trips?complete=${trip.id}`}
-                    className="rounded-full border border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--success)] hover:bg-[color:rgba(92,191,118,0.18)] transition"
+                    className="rounded-full border border-[rgba(92,191,118,0.35)] bg-[rgba(92,191,118,0.12)] px-3 py-1.5 text-xs font-semibold text-(--success) hover:bg-[rgba(92,191,118,0.18)] transition"
                   >
                     Complete
                   </Link>
@@ -360,7 +360,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                     <input type="hidden" name="id" value={trip.id} />
                     <SubmitButton
                       label="Cancel"
-                      className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] hover:bg-[color:rgba(217,80,63,0.18)] transition"
+                      className="rounded-full border border-[rgba(217,80,63,0.35)] bg-[rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-(--danger) hover:bg-[rgba(217,80,63,0.18)] transition"
                     />
                   </form>
                 </>
@@ -370,16 +370,16 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                   <input type="hidden" name="id" value={trip.id} />
                   <SubmitButton
                     label="Delete"
-                    className="rounded-full border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-semibold text-[var(--muted)] hover:bg-white/10 transition"
+                    className="rounded-full border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-semibold text-(--muted) hover:bg-white/10 transition"
                   />
                 </form>
               )}
               {!canManage && (
-                <span className="text-xs text-[var(--muted)] italic">View only</span>
+                <span className="text-xs text-(--muted) italic">View only</span>
               )}
             </div>
           ])}
-          getRowClassName={() => (searchTerm ? "bg-[color:rgba(255,255,255,0.02)]" : "")}
+          getRowClassName={() => (searchTerm ? "bg-[rgba(255,255,255,0.02)]" : "")}
         />
       </Panel>
     </AppShell>
