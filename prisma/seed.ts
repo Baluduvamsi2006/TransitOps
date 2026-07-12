@@ -1,12 +1,9 @@
 import "dotenv/config";
-import { PrismaClient, Prisma } from "@prisma/client";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
-const connectionString = `${process.env.DATABASE_URL}`;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+// seed.ts — simple TypeScript seed (runs via ts-node or tsx)
+// The production seed that runs via `prisma db seed` is seed.cjs
+const prisma = new PrismaClient();
 
 async function main() {
   console.log("Deleting existing records...");
@@ -17,14 +14,14 @@ async function main() {
   await prisma.vehicle.deleteMany();
   await prisma.driver.deleteMany();
 
-  const indianVehicles: Prisma.VehicleCreateInput[] = [
+  const indianVehicles = [
     {
       registrationNumber: "MH01AB1234",
       nameModel: "Tata Ace Gold",
       type: "Mini Truck",
       maxLoadCapacity: 750,
       acquisitionCost: 450000,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
       odometer: 15200,
     },
     {
@@ -33,7 +30,7 @@ async function main() {
       type: "Mini Truck",
       maxLoadCapacity: 1700,
       acquisitionCost: 850000,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
       odometer: 34500,
     },
     {
@@ -42,7 +39,7 @@ async function main() {
       type: "Mini Truck",
       maxLoadCapacity: 1500,
       acquisitionCost: 750000,
-      status: "ON_TRIP",
+      status: "ON_TRIP" as const,
       odometer: 42000,
     },
     {
@@ -51,7 +48,7 @@ async function main() {
       type: "Van",
       maxLoadCapacity: 500,
       acquisitionCost: 550000,
-      status: "ON_TRIP",
+      status: "ON_TRIP" as const,
       odometer: 8900,
     },
     {
@@ -60,7 +57,7 @@ async function main() {
       type: "Truck",
       maxLoadCapacity: 4900,
       acquisitionCost: 1200000,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
       odometer: 8500,
     },
     {
@@ -69,7 +66,7 @@ async function main() {
       type: "Heavy Duty",
       maxLoadCapacity: 18500,
       acquisitionCost: 2400000,
-      status: "IN_SHOP",
+      status: "IN_SHOP" as const,
       odometer: 112000,
     },
     {
@@ -78,7 +75,7 @@ async function main() {
       type: "Heavy Duty",
       maxLoadCapacity: 42000,
       acquisitionCost: 3800000,
-      status: "RETIRED",
+      status: "RETIRED" as const,
       odometer: 450000,
     },
     {
@@ -87,13 +84,12 @@ async function main() {
       type: "Van",
       maxLoadCapacity: 1200,
       acquisitionCost: 1100000,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
       odometer: 23400,
-    }
+    },
   ];
 
   console.log("Seeding database with Indian vehicles...");
-  
   for (const v of indianVehicles) {
     await prisma.vehicle.upsert({
       where: { registrationNumber: v.registrationNumber },
@@ -102,7 +98,7 @@ async function main() {
     });
   }
 
-  const indianDrivers: Prisma.DriverCreateInput[] = [
+  const indianDrivers = [
     {
       name: "Ramesh Kumar",
       licenseNumber: "DL1420101234567",
@@ -110,7 +106,7 @@ async function main() {
       licenseExpiryDate: new Date("2028-05-12"),
       contactNumber: "+919876543210",
       safetyScore: 98.5,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
     },
     {
       name: "Suresh Singh",
@@ -119,7 +115,7 @@ async function main() {
       licenseExpiryDate: new Date("2026-11-20"),
       contactNumber: "+918765432109",
       safetyScore: 92.0,
-      status: "ON_TRIP",
+      status: "ON_TRIP" as const,
     },
     {
       name: "Rajesh Patel",
@@ -128,7 +124,7 @@ async function main() {
       licenseExpiryDate: new Date("2029-01-15"),
       contactNumber: "+917654321098",
       safetyScore: 85.5,
-      status: "OFF_DUTY",
+      status: "OFF_DUTY" as const,
     },
     {
       name: "Abdul Khan",
@@ -137,7 +133,7 @@ async function main() {
       licenseExpiryDate: new Date("2027-08-30"),
       contactNumber: "+916543210987",
       safetyScore: 99.0,
-      status: "AVAILABLE",
+      status: "AVAILABLE" as const,
     },
     {
       name: "Manoj Desai",
@@ -146,7 +142,7 @@ async function main() {
       licenseExpiryDate: new Date("2025-10-05"),
       contactNumber: "+919988776655",
       safetyScore: 78.0,
-      status: "SUSPENDED",
+      status: "SUSPENDED" as const,
     },
   ];
 
