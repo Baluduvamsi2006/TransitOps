@@ -209,7 +209,7 @@ export function LoginForm() {
                     >
                         {loginRoles.map((item) => (
                             <option key={item} value={item} className="bg-(--bg) text-white">
-                                {roleLabels[item]}
+                                {(roleLabels as Record<string, string>)[item]}
                             </option>
                         ))}
                     </select>
