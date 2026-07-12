@@ -6,17 +6,17 @@ type MetricCardProps = {
 
 export function MetricCard({ label, value, tone = "neutral" }: MetricCardProps) {
   const toneClass = {
-    accent: "text-[var(--accent)]",
-    success: "text-[var(--success)]",
-    warning: "text-[var(--warning)]",
-    info: "text-[var(--info)]",
-    danger: "text-[var(--danger)]",
+    accent: "text-(--accent)",
+    success: "text-(--success)",
+    warning: "text-(--warning)",
+    info: "text-(--info)",
+    danger: "text-(--danger)",
     neutral: "text-white"
   }[tone];
 
   return (
-    <article className="animate-fade-up rounded-[1.4rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform duration-300 hover:-translate-y-0.5">
-      <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">{label}</p>
+    <article className="animate-fade-up rounded-[1.4rem] border border-white/8 bg-(--panel) p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform duration-300 hover:-translate-y-0.5">
+      <p className="text-xs uppercase tracking-[0.24em] text-(--muted)">{label}</p>
       <p className={`mt-4 text-3xl font-semibold ${toneClass}`}>{value}</p>
     </article>
   );
@@ -30,10 +30,10 @@ type PanelProps = {
 
 export function Panel({ title, subtitle, children }: PanelProps) {
   return (
-    <section className="animate-fade-up rounded-[1.6rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-transform duration-300 hover:-translate-y-0.5 lg:p-6">
+    <section className="animate-fade-up rounded-[1.6rem] border border-white/8 bg-(--panel) p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-transform duration-300 hover:-translate-y-0.5 lg:p-6">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">{title}</h2>
-        {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-2)]">{subtitle}</p> : null}
+        <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-(--muted)">{title}</h2>
+        {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-(--muted-2)">{subtitle}</p> : null}
       </div>
       {children}
     </section>
@@ -43,15 +43,15 @@ export function Panel({ title, subtitle, children }: PanelProps) {
 type PageHeaderProps = {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
 };
 
 export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
   return (
     <div className="animate-fade-up mb-6 space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--accent)]">{eyebrow}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.32em] text-(--accent)">{eyebrow}</p>
       <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
-      <p className="max-w-3xl text-sm leading-7 text-[var(--muted-2)] sm:text-base">{description}</p>
+      {description ? <p className="max-w-3xl text-sm leading-7 text-(--muted-2) sm:text-base">{description}</p> : null}
     </div>
   );
 }
@@ -63,12 +63,12 @@ type PillProps = {
 
 export function Pill({ tone = "muted", children }: PillProps) {
   const classes = {
-    accent: "bg-[var(--accent-soft)] text-[var(--accent)] border-[color:var(--accent-2)]",
-    success: "bg-[color-mix(in_srgb,var(--success)_18%,transparent)] text-[var(--success)] border-[color:rgba(63,174,108,0.35)]",
-    warning: "bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] text-[var(--warning)] border-[color:rgba(224,160,46,0.35)]",
-    info: "bg-[color-mix(in_srgb,var(--info)_18%,transparent)] text-[var(--info)] border-[color:rgba(79,143,209,0.35)]",
-    danger: "bg-[color-mix(in_srgb,var(--danger)_18%,transparent)] text-[var(--danger)] border-[color:rgba(217,80,63,0.35)]",
-    muted: "bg-white/6 text-[var(--muted)] border-white/8"
+    accent: "bg-(--accent-soft) text-(--accent) border-[color:var(--accent-2)]",
+    success: "bg-[color-mix(in_srgb,var(--success)_18%,transparent)] text-(--success) border-[color:rgba(63,174,108,0.35)]",
+    warning: "bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] text-(--warning) border-[color:rgba(224,160,46,0.35)]",
+    info: "bg-[color-mix(in_srgb,var(--info)_18%,transparent)] text-(--info) border-[color:rgba(79,143,209,0.35)]",
+    danger: "bg-[color-mix(in_srgb,var(--danger)_18%,transparent)] text-(--danger) border-[color:rgba(217,80,63,0.35)]",
+    muted: "bg-white/6 text-(--muted) border-white/8"
   }[tone];
 
   return <span className={`animate-pop-in inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${classes}`}>{children}</span>;
@@ -94,7 +94,7 @@ export function Table({ columns, rows, getRowClassName }: TableProps) {
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-white/8 bg-white/4 text-[11px] uppercase tracking-[0.22em] text-[var(--muted)]">
+            <tr className="border-b border-white/8 bg-white/4 text-[11px] uppercase tracking-[0.22em] text-(--muted)">
               {columns.map((column) => (
                 <th key={column} className="px-4 py-3 font-semibold last:text-right">{column}</th>
               ))}
