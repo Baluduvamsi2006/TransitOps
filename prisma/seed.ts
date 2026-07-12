@@ -9,7 +9,11 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("Deleting existing vehicles...");
+  console.log("Deleting existing records...");
+  await prisma.trip.deleteMany();
+  await prisma.maintenanceLog.deleteMany();
+  await prisma.fuelLog.deleteMany();
+  await prisma.expense.deleteMany();
   await prisma.vehicle.deleteMany();
 
   const indianVehicles: Prisma.VehicleCreateInput[] = [

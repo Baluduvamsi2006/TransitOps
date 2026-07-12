@@ -35,47 +35,20 @@ export default async function FleetPage(props: { searchParams?: Promise<{ search
     filteredVehicles = filteredVehicles.filter(v => v.status.trim().toLowerCase() === String(searchParams.status).trim().toLowerCase());
   }
 
-  const totalCount = vehicles.length;
-  const availableCount = vehicles.filter(v => v.status === "AVAILABLE").length;
-  const inShopCount = vehicles.filter(v => v.status === "IN_SHOP").length;
-  const retiredCount = vehicles.filter(v => v.status === "RETIRED").length;
-  const onTripCount = vehicles.filter(v => v.status === "ON_TRIP").length;
-
-  const fleetSummary = [
-    { label: "Vehicles Registered", value: totalCount.toString(), tone: "accent" as const },
-    { label: "Available for Dispatch", value: availableCount.toString(), tone: "success" as const },
-    { label: "In Shop", value: inShopCount.toString(), tone: "warning" as const },
-    { label: "Retired Assets", value: retiredCount.toString(), tone: "danger" as const }
-  ];
-
-  const vehicleStatusBars = [
-    { label: "Available", count: availableCount, width: `${totalCount ? (availableCount / totalCount) * 100 : 0}%`, fill: "bg-(--success)" },
-    { label: "On Trip", count: onTripCount, width: `${totalCount ? (onTripCount / totalCount) * 100 : 0}%`, fill: "bg-(--info)" },
-    { label: "In Shop", count: inShopCount, width: `${totalCount ? (inShopCount / totalCount) * 100 : 0}%`, fill: "bg-(--warning)" },
-    { label: "Retired", count: retiredCount, width: `${totalCount ? (retiredCount / totalCount) * 100 : 0}%`, fill: "bg-(--danger)" }
-  ];
-
   return (
     <AppShell activePath="/fleet">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
         <PageHeader
           eyebrow="Fleet Registry"
-          title="Vehicles and asset lifecycle"
-          description="A master list for registration, type, capacity, odometer tracking, acquisition cost, and operational state."
+          title="Vehicle Registry"
         />
-        <div className="mt-4 sm:mt-8">
+        <div className="mt-4 sm:mt-0">
           <AddVehicleButton />
         </div>
       </div>
 
-      <StatGrid>
-        {fleetSummary.map((item) => (
-          <MetricCard key={item.label} label={item.label} value={item.value} tone={item.tone} />
-        ))}
-      </StatGrid>
-
-      <div className="grid items-start gap-5 xl:grid-cols-[1.3fr_0.9fr]">
-        <Panel title="Vehicle list" subtitle="Search, filter, and inspect the live fleet inventory.">
+      <div className="mt-8">
+        <Panel title="Vehicle list">
           <VehicleFilters />
 
           <Table
@@ -90,23 +63,6 @@ export default async function FleetPage(props: { searchParams?: Promise<{ search
               <StatusUpdater key={`${vehicle.id}-status`} vehicleId={vehicle.id} initialStatus={vehicle.status} />
             ])}
           />
-        </Panel>
-
-        <Panel title="Availability mix" subtitle="Live status split used for dispatch selection and dashboard KPIs.">
-          <div className="space-y-4">
-            {vehicleStatusBars.map((bar) => (
-              <div key={bar.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-(--muted)">
-                  <span>{bar.label}</span>
-                  <span>{bar.count}</span>
-                </div>
-                <div className="h-2 rounded-full bg-(--panel-strong)">
-                  <div className={`h-2 rounded-full ${bar.fill}`} style={{ width: bar.width }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
         </Panel>
       </div>
     </AppShell>

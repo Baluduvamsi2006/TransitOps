@@ -56,7 +56,7 @@ export function AppShell({ children, activePath }: AppShellProps) {
             </div>
             <div>
               <div className="text-sm font-semibold tracking-wide text-white">TransitOps</div>
-              <div className="text-xs text-(--muted)">Operations workspace</div>
+              <div className="text-xs text-(--muted)">Reference UI mode</div>
             </div>
           </div>
 
@@ -91,25 +91,11 @@ export function AppShell({ children, activePath }: AppShellProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="border-b border-white/6 bg-[color-mix(in_srbg,var(--bg)_86%,white_14%)] backdrop-blur">
             <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
-              <div className="flex min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-white/8 bg-white/6 px-4 py-3">
-                <span className="rounded-full border border-white/8 bg-white/6 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-(--muted)">
-                  Search
-                </span>
-                <input
-                  key={searchParams.toString()}
-                  name="q"
-                  aria-label="Search"
-                  defaultValue={initialQuery}
-                  placeholder="Search drivers, trips, vehicles..."
-                  onChange={handleSearchChange}
-                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-(--muted)"
-                />
-                {isPending ? <span className="text-xs text-(--muted)">Updating...</span> : null}
-              </div>
+              <div className="flex-1" />
 
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">
-                  Live branch preview
+                  Transport Operations Demo
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-(--accent) text-sm font-bold text-(--accent-ink)">
                   U
