@@ -93,3 +93,39 @@ textarea {
 .animation-delay-3 {
   animation-delay: 240ms;
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    min-height: auto;
+  }
+  
+  /* Hide sidebar and shell elements */
+  nav, header, [role="navigation"], .no-print {
+    display: none !important;
+  }
+  
+  /* Reset panel backgrounds */
+  .bg-\[\(--panel\)\] {
+    background: transparent !important;
+    border-color: #eee !important;
+    box-shadow: none !important;
+  }
+  
+  /* Make text visible on white */
+  .text-white {
+    color: black !important;
+  }
+  
+  .text-\[\(--muted\)\] {
+    color: #666 !important;
+  }
+  
+  /* Expand main content */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+}
