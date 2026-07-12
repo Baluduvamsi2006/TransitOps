@@ -1,39 +1,84 @@
-const metrics = [
-  { label: "Active Vehicles", value: "24" },
-  { label: "Available Vehicles", value: "18" },
-  { label: "Vehicles in Maintenance", value: "4" },
-  { label: "Active Trips", value: "9" }
-];
+import { AppShell } from "../components/transit-shell";
+import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
+import {
+  dashboardKpis,
+  maintenanceRows,
+  recentTrips,
+  vehicleRows,
+  vehicleStatusBars
+} from "../lib/transitops-data";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50">
-      <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-6 py-16">
-        <div className="mb-10 max-w-3xl space-y-5">
-          <p className="text-sm font-medium uppercase tracking-[0.28em] text-cyan-300">
-            TransitOps
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
-            Smart transport operations, built for dispatch, maintenance, and control.
-          </h1>
-          <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            A Next.js foundation for managing fleet assets, drivers, trips, fuel, expenses,
-            and reporting with business rules baked in.
-          </p>
-        </div>
+    <AppShell activePath="/">
+      <PageHeader
+        eyebrow="Dashboard"
+        title="Fleet command center"
+        description="A reference-first operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
+      />
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {metrics.map((metric) => (
-            <article
-              key={metric.label}
-              className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-cyan-950/10 backdrop-blur"
-            >
-              <p className="text-sm text-slate-400">{metric.label}</p>
-              <p className="mt-3 text-3xl font-semibold text-white">{metric.value}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
+      <StatGrid>
+        {dashboardKpis.map((metric) => (
+          <MetricCard key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
+        ))}
+      </StatGrid>
+
+      <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
+        <Panel title="Recent trips" subtitle="Dispatch activity and completion status">
+          <Table
+            columns={["Trip", "Vehicle", "Driver", "Status", "Notes"]}
+            rows={recentTrips.map((trip) => [
+              trip.code,
+              trip.vehicle,
+              trip.driver,
+              <Pill key={`${trip.code}-status`} tone={trip.tone}>{trip.status}</Pill>,
+              trip.notes
+            ])}
+          />
+        </Panel>
+
+        <Panel title="Vehicle status" subtitle="Availability mix across the live fleet">
+          <div className="space-y-4">
+            {vehicleStatusBars.map((bar) => (
+              <div key={bar.label} className="space-y-2">
+                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
+                  <span>{bar.label}</span>
+                  <span>{bar.count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-[var(--panel-strong)]">
+                  <div className={`h-2 rounded-full ${bar.fill}`} style={{ width: bar.width }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
+
+      <Panel title="Fleet snapshot" subtitle="High-value vehicles and compliance flags">
+        <Table
+          columns={["Reg no.", "Vehicle", "Type", "Capacity", "Status"]}
+          rows={vehicleRows.slice(0, 6).map((vehicle) => [
+            vehicle.reg,
+            vehicle.name,
+            vehicle.type,
+            `${vehicle.capacity} kg`,
+            <Pill key={`${vehicle.reg}-pill`} tone={vehicle.tone}>{vehicle.status}</Pill>
+          ])}
+        />
+      </Panel>
+
+      <Panel title="Maintenance queue" subtitle="Active service records that keep vehicles in shop">
+        <Table
+          columns={["Vehicle", "Service", "Date", "Cost", "State"]}
+          rows={maintenanceRows.map((record) => [
+            record.vehicle,
+            record.service,
+            record.date,
+            record.cost,
+            <Pill key={`${record.vehicle}-maint`} tone={record.tone}>{record.state}</Pill>
+          ])}
+        />
+      </Panel>
+    </AppShell>
   );
 }
