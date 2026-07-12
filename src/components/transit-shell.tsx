@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 import { navItems } from "../lib/transitops-data";
@@ -12,9 +11,14 @@ import { useSession } from "./session-provider";
 type AppShellProps = {
   children: React.ReactNode;
   activePath?: string;
+  user?: {
+    name: string;
+    email: string;
+    role: string;
+  } | null;
 };
 
-export function AppShell({ children, activePath }: AppShellProps) {
+export function AppShell({ children, activePath, user }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSigningOut, startTransition] = useTransition();
@@ -43,7 +47,7 @@ export function AppShell({ children, activePath }: AppShellProps) {
     <div className="min-h-screen bg-(--bg) text-(--text)">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside className="hidden w-72 shrink-0 border-r border-white/6 bg-(--sidebar) px-4 py-5 lg:flex lg:flex-col">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/6 px-4 py-3">
+          <div className="animate-fade-up flex items-center gap-3 rounded-2xl border border-white/8 bg-white/6 px-4 py-3">
             <div className="grid h-11 w-11 place-items-center rounded-2xl bg-(--accent) text-base font-black text-(--accent-ink) shadow-[0_12px_30px_rgba(224,138,46,0.25)]">
               T
             </div>
@@ -60,7 +64,7 @@ export function AppShell({ children, activePath }: AppShellProps) {
                 <Link
                   key={item.href}
                   href={item.href as never}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${isActive
+                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition duration-300 ${isActive
                       ? "bg-(--accent-soft) text-(--accent) shadow-[0_10px_30px_rgba(224,138,46,0.12)]"
                       : "text-(--muted) hover:bg-white/6 hover:text-white"
                     }`}
@@ -73,30 +77,24 @@ export function AppShell({ children, activePath }: AppShellProps) {
           </nav>
 
           <div className="mt-auto rounded-3xl border border-white/8 bg-white/6 p-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-(--muted)">Access</p>
-            <p className="mt-2 text-sm leading-6 text-white/88">
-              {session
-                ? `${roleLabels[session.role]} access is active for ${session.name}.`
-                : "Sign in to load the RBAC-controlled TransitOps workspace."}
-            </p>
+            <div>
+              <p className="text-[10px] uppercase font-semibold tracking-[0.24em] text-(--accent)">
+                {session ? roleLabels[session.role] : "Guest Access"}
+              </p>
+              <p className="mt-1 text-sm font-bold text-white leading-normal truncate">{session ? session.name : "Sign in required"}</p>
+              <p className="text-xs font-mono text-(--muted) truncate">{session ? session.email : "Read-only mode"}</p>
+            </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="border-b border-white/6 bg-[color-mix(in_srgb,var(--bg)_86%,white_14%)] backdrop-blur">
             <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
-              <div className="flex min-w-60 flex-1 items-center gap-3 rounded-2xl border border-white/8 bg-white/6 px-4 py-3">
-                <span className="text-sm text-(--muted)">⌕</span>
-                <input
-                  aria-label="Search"
-                  placeholder="Search vehicles, drivers, trips..."
-                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-(--muted)"
-                />
-              </div>
+              <div className="flex-1" />
 
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">
-                  {session ? roleLabels[session.role] : "Guest access"}
+                  Role: {session ? roleLabels[session.role] : "Guest"}
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-(--accent) text-sm font-bold text-(--accent-ink)">
                   {initials}
