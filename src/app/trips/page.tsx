@@ -9,7 +9,22 @@ const tripKpis = [
   { label: "Cancelled", value: "3", tone: "danger" as const }
 ];
 
-export default function TripsPage() {
+type TripsPageProps = {
+  searchParams?: Promise<{
+    q?: string;
+  }>;
+};
+
+export default async function TripsPage({ searchParams }: TripsPageProps) {
+  const params = (await searchParams) ?? {};
+  const searchTerm = (params.q ?? "").trim().toLowerCase();
+  const visibleTrips = searchTerm
+    ? tripRows.filter((trip) => {
+        const haystack = [trip.id, trip.route, trip.vehicle, trip.driver, trip.status, trip.weight, trip.distance].join(" ").toLowerCase();
+        return haystack.includes(searchTerm);
+      })
+    : tripRows;
+
   return (
     <AppShell activePath="/trips">
       <PageHeader
@@ -79,7 +94,7 @@ export default function TripsPage() {
       <Panel title="Live trips" subtitle="Draft, dispatched, completed, and cancelled trips shown in a single board.">
         <Table
           columns={["Trip", "Route", "Vehicle", "Driver", "Weight", "Distance", "Status"]}
-          rows={tripRows.map((trip) => [
+          rows={visibleTrips.map((trip) => [
             trip.id,
             trip.route,
             trip.vehicle,
@@ -88,6 +103,7 @@ export default function TripsPage() {
             trip.distance,
             <Pill key={`${trip.id}-trip`} tone={trip.tone}>{trip.status}</Pill>
           ])}
+          getRowClassName={() => (searchTerm ? "bg-[color:rgba(255,255,255,0.02)]" : "")}
         />
       </Panel>
     </AppShell>
