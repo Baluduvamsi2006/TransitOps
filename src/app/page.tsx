@@ -94,39 +94,43 @@ export default async function Home({ searchParams }: DashboardProps) {
   );
 
   // ── Drivers ──────────────────────────────────────────────────────────────────
+  // For deep filtering: if we filter vehicles, the "Drivers On Duty" should ideally just count
+  // unique drivers active strictly ON THOSE vehicles right now. If no filter, we count global drivers.
   const drivers = await prisma.driver.findMany();
   const totalDrivers = drivers.length;
   const availableDrivers = drivers.filter((d) => d.status === "AVAILABLE").length;
-  const driversOnDuty = drivers.filter((d) => d.status === "ON_TRIP").length;
   const suspendedDrivers = drivers.filter((d) => d.status === "SUSPENDED").length;
+  const activeDispatchedTripsIdx = new Set(trips.filter(t => t.status === "DISPATCHED" || t.status === "DRAFT").map(t => t.driverId));
+  const driversOnDuty = activeDispatchedTripsIdx.size; // Active drivers mapped strictly to filtered trips
 
   // ── Financials ────────────────────────────────────────────────────────────────
-  const fuelAgg = await prisma.fuelLog.aggregate({ _sum: { cost: true } });
-  const maintAgg = await prisma.maintenanceLog.aggregate({ _sum: { cost: true } });
-  const expAgg = await prisma.expense.aggregate({ _sum: { amount: true } });
-  const totalFuel = fuelAgg._sum.cost || 0;
-  const totalMaint = maintAgg._sum.cost || 0;
-  const totalOther = expAgg._sum.amount || 0;
+  const relationWhere = Object.keys(vehicleWhere).length > 0 ? { vehicle: vehicleWhere } : {};
+  const fuelAgg = await prisma.fuelLog.aggregate({ _sum: { cost: true }, where: relationWhere });
+  const maintAgg = await prisma.maintenanceLog.aggregate({ _sum: { cost: true }, where: relationWhere });
+  const expAgg = await prisma.expense.aggregate({ _sum: { amount: true }, where: relationWhere });
+  const totalFuel = fuelAgg._sum?.cost || 0;
+  const totalMaint = maintAgg._sum?.cost || 0;
+  const totalOther = expAgg._sum?.amount || 0;
   const totalOpCost = totalFuel + totalMaint + totalOther;
   const netProfit = totalRevenue - totalOpCost;
 
   // ── Maintenance queue ─────────────────────────────────────────────────────────
   const maintenanceQueue = await prisma.maintenanceLog.findMany({
-    where: { isOpen: true },
+    where: { isOpen: true, ...relationWhere },
     include: { vehicle: true },
     orderBy: { createdAt: "desc" }
   });
 
   // ── KPI cards ─────────────────────────────────────────────────────────────────
+  // Adjusted explicitly to 7 cards as required. Financial metrics moved.
   const topKpis = [
-    { label: "Total Revenue", value: fmtRupees(totalRevenue), tone: "success" as const },
-    { label: "Operational Cost", value: fmtRupees(totalOpCost), tone: "warning" as const },
-    { label: "Net Profit", value: fmtRupees(netProfit), tone: netProfit >= 0 ? "success" as const : "danger" as const },
-    { label: "Fleet Utilization", value: `${fleetUtilization}%`, tone: "accent" as const },
-    { label: "Trips Completed", value: completedCount.toString(), tone: "success" as const },
+    { label: "Active Vehicles", value: totalActive.toString(), tone: "accent" as const },
+    { label: "Available", value: available.toString(), tone: "success" as const },
+    { label: "In Maintenance", value: inShop.toString(), tone: "warning" as const },
     { label: "Active Trips", value: activeTrips.toString(), tone: "info" as const },
     { label: "Pending Trips", value: pendingTrips.toString(), tone: "neutral" as const },
-    { label: "Drivers On Duty", value: driversOnDuty.toString(), tone: "neutral" as const }
+    { label: "Drivers On Duty", value: driversOnDuty.toString(), tone: "neutral" as const },
+    { label: "Fleet Utilization", value: `${fleetUtilization}%`, tone: "accent" as const }
   ];
 
   const vehicleStatusBars = [
@@ -152,12 +156,12 @@ export default async function Home({ searchParams }: DashboardProps) {
 
       <DashboardFilters />
 
-      {/* KPI grid */}
-      <StatGrid>
+      {/* KPI grid strictly matches the requested 3-column wrap layout */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-5">
         {topKpis.map((metric) => (
           <MetricCard key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
         ))}
-      </StatGrid>
+      </div>
 
       {/* Row 2: Recent trips + vehicle status */}
       <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr] mb-5">
