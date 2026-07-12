@@ -38,7 +38,7 @@ export function AppShell({ children, activePath, user }: AppShellProps) {
   const handleSignOut = () => {
     startTransition(async () => {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.replace("/login");
+      router.replace("/login" as any);
       router.refresh();
     });
   };
