@@ -1,30 +1,32 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useTransition } from "react";
 
 export function VehicleFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
 
-  // Debounced search
+  // Debounced search using transitions to keep focus and prevent hard reload
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       const currentSearch = params.get("search") || "";
-      if (searchQuery === currentSearch) return; // Prevent infinite loop
+      if (searchQuery === currentSearch) return;
 
       if (searchQuery) {
         params.set("search", searchQuery);
       } else {
         params.delete("search");
       }
-      router.push(`${pathname}?${params.toString()}` as any);
-      router.refresh();
-    }, 300);
+      startTransition(() => {
+        router.replace(`${pathname}?${params.toString()}` as any);
+      });
+    }, 250);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, router, searchParams, pathname]);
@@ -37,26 +39,34 @@ export function VehicleFilters() {
       } else {
         params.delete(name);
       }
-      router.push(`${pathname}?${params.toString()}` as any);
-      router.refresh();
+      startTransition(() => {
+        router.replace(`${pathname}?${params.toString()}` as any);
+      });
     },
     [searchParams, router, pathname]
   );
 
   return (
-    <div className="mb-4 flex flex-wrap gap-3">
-      <input
-        type="text"
-        placeholder="Search reg / model..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none focus:border-(--accent)"
-      />
+    <div className="mb-4 flex flex-wrap gap-3 items-center">
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search reg / model..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none focus:border-(--accent) transition"
+        />
+        {isPending && (
+          <span className="absolute right-3 top-2.5 text-xs text-(--muted) animate-pulse">
+            ...
+          </span>
+        )}
+      </div>
 
       <select
         value={searchParams.get("type") || "All"}
         onChange={(e) => updateFilter("type", e.target.value)}
-        className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-2 text-sm text-(--muted) outline-none focus:border-(--accent)"
+        className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-2 text-sm text-(--muted) outline-none focus:border-(--accent) transition"
       >
         <option value="All">Type: All</option>
         <option value="Van">Van</option>
@@ -68,7 +78,7 @@ export function VehicleFilters() {
       <select
         value={searchParams.get("status") || "All"}
         onChange={(e) => updateFilter("status", e.target.value)}
-        className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-2 text-sm text-(--muted) outline-none focus:border-(--accent)"
+        className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-2 text-sm text-(--muted) outline-none focus:border-(--accent) transition"
       >
         <option value="All">Status: All</option>
         <option value="AVAILABLE">Available</option>
