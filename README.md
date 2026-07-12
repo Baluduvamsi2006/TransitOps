@@ -7,19 +7,19 @@ TransitOps is a modern, end‑to‑end web platform that digitises **vehicle, dr
 ---
 
 ## 📖 Table of Contents
-- [Project Overview](#-project-overview)
-- [Business Context & Goals](#-business-context--goals)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [System Architecture](#-system-architecture)
-- [Database Model (Prisma)](#-database-model-prisma)
-- [API Design](#-api-design)
-- [UI / Component Library](#-ui--component-library)
-- [Getting Started (Local Development)](#-getting-started-local-development)
-- [Testing & Verification](#-testing--verification)
-- [Deployment Guide](#-deployment-guide)
-- [Contribution Workflow](#-contribution-workflow)
-- [License](#-license)
+- [Project Overview](#project-overview)
+- [Business Context & Goals](#business-context-goals)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [System Architecture](#system-architecture)
+- [Database Model (Prisma)](#database-model-prisma)
+- [API Design](#api-design)
+- [UI / Component Library](#ui-component-library)
+- [Getting Started (Local Development)](#getting-started-local-development)
+- [Testing & Verification](#testing-verification)
+- [Deployment Guide](#deployment-guide)
+- [Contribution Workflow](#contribution-workflow)
+- [License](#license)
 
 ---
 
