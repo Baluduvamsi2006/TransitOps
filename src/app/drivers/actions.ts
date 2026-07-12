@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { prisma } from "../../lib/prisma";
+import { getServerSession } from "../../lib/jwt";
+import { canManagePath } from "../../lib/rbac";
 
 const DRIVER_PATH = "/drivers";
 
@@ -84,8 +86,13 @@ async function findDuplicateLicense(licenseNumber: string, ignoreId?: string) {
 }
 
 export async function createDriver(formData: FormData) {
-  const parsed = parseDriverForm(formData);
   const returnTo = readString(formData, "returnTo") || DRIVER_PATH;
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/drivers")) {
+    redirectTo(buildRedirectPath(returnTo, "error", "Unauthorized: You do not have permission to manage drivers."));
+  }
+
+  const parsed = parseDriverForm(formData);
 
   if (parsed.error) {
     redirectTo(buildRedirectPath(returnTo, "error", parsed.error));
@@ -113,6 +120,11 @@ export async function createDriver(formData: FormData) {
 }
 
 export async function updateDriver(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/drivers")) {
+    redirectTo(buildRedirectPath(DRIVER_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
   const parsed = parseDriverForm(formData);
 
@@ -147,8 +159,13 @@ export async function updateDriver(formData: FormData) {
 }
 
 export async function deleteDriver(formData: FormData) {
-  const id = readString(formData, "id");
   const returnTo = readString(formData, "returnTo") || DRIVER_PATH;
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/drivers")) {
+    redirectTo(buildRedirectPath(returnTo, "error", "Unauthorized."));
+  }
+
+  const id = readString(formData, "id");
 
   if (!id) {
     redirectTo(buildRedirectPath(returnTo, "error", "Missing driver id."));

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/prisma";
 import { TripStatus, VehicleStatus, DriverStatus } from "@prisma/client";
+import { getServerSession } from "../../lib/jwt";
+import { canManagePath } from "../../lib/rbac";
 
 const TRIPS_PATH = "/trips";
 
@@ -28,6 +30,11 @@ function readNumber(formData: FormData, key: string) {
 }
 
 export async function createTrip(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/trips")) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Unauthorized."));
+  }
+
   const source = readString(formData, "source");
   const destination = readString(formData, "destination");
   const cargoWeight = readNumber(formData, "cargoWeight");
@@ -84,6 +91,11 @@ export async function createTrip(formData: FormData) {
 }
 
 export async function dispatchTrip(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/trips")) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
 
   if (!id) {
@@ -138,6 +150,11 @@ export async function dispatchTrip(formData: FormData) {
 }
 
 export async function completeTrip(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/trips")) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
   const finalOdometer = readNumber(formData, "finalOdometer");
   const fuelLiters = readNumber(formData, "fuelLiters");
@@ -205,6 +222,11 @@ export async function completeTrip(formData: FormData) {
 }
 
 export async function cancelTrip(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/trips")) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
 
   if (!id) {
@@ -252,6 +274,11 @@ export async function cancelTrip(formData: FormData) {
 }
 
 export async function deleteTrip(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/trips")) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
 
   if (!id) {

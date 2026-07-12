@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "../../lib/prisma";
+import { getServerSession } from "../../lib/jwt";
+import { canManagePath } from "../../lib/rbac";
 
 const FINANCE_PATH = "/finance";
 
@@ -27,6 +29,11 @@ function readNumber(formData: FormData, key: string) {
 }
 
 export async function createFuelLog(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/finance")) {
+    redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Unauthorized."));
+  }
+
   const vehicleId = readString(formData, "vehicleId");
   const liters = readNumber(formData, "liters");
   const cost = readNumber(formData, "cost");
@@ -56,6 +63,11 @@ export async function createFuelLog(formData: FormData) {
 }
 
 export async function deleteFuelLog(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/finance")) {
+    redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
 
   if (!id) {
@@ -75,6 +87,11 @@ export async function deleteFuelLog(formData: FormData) {
 }
 
 export async function createExpense(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/finance")) {
+    redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Unauthorized."));
+  }
+
   const vehicleId = readString(formData, "vehicleId");
   const description = readString(formData, "description");
   const amount = readNumber(formData, "amount");
@@ -104,6 +121,11 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function deleteExpense(formData: FormData) {
+  const session = await getServerSession();
+  if (!session || !canManagePath(session.role, "/finance")) {
+    redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Unauthorized."));
+  }
+
   const id = readString(formData, "id");
 
   if (!id) {
