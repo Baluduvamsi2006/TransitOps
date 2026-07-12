@@ -22,30 +22,42 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: "Email, password, and role are required." }, { status: 400 });
         }
 
+        // ── Step 1: Check if user exists with this email ──────────────────────
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
-            return NextResponse.json({ message: "Invalid email, password, or role." }, { status: 401 });
+            return NextResponse.json(
+                { message: "No account found with this email address." },
+                { status: 401 }
+            );
         }
 
-        const now = new Date();
+        // ── Step 2: Check role match (SUPER_ADMIN bypasses role selection) ────
+        if (user.role !== "SUPER_ADMIN" && user.role !== role) {
+            return NextResponse.json(
+                { message: `No account found with this email for the "${body.role?.replace(/_/g, " ")}" role.` },
+                { status: 401 }
+            );
+        }
 
+        // ── Step 2: Check if account is locked ────────────────────────────────
+        const now = new Date();
         if (user.lockedUntil && user.lockedUntil > now) {
             const isFrozen = user.lockedUntil.getFullYear() > 9000;
             return NextResponse.json(
                 {
                     message: isFrozen
-                        ? "Account is frozen due to 5 consecutive invalid login attempts. Please contact a Super Admin to unfreeze it."
-                        : "Account locked. Try again later."
+                        ? "Account is frozen due to 5 consecutive failed login attempts. Contact a Super Admin to unfreeze."
+                        : "Account is temporarily locked. Try again later."
                 },
                 { status: 423 }
             );
         }
 
+        // ── Step 3: Verify password ────────────────────────────────────────────
         const passwordMatches = verifyPassword(password, user.password);
-        const roleMatches = user.role === role;
 
-        if (!passwordMatches || !roleMatches) {
+        if (!passwordMatches) {
             const failedAttempts = user.failedLoginAttempts + 1;
             const isLocked = failedAttempts >= 5;
 
@@ -57,16 +69,23 @@ export async function POST(request: NextRequest) {
                 }
             });
 
+            if (isLocked) {
+                return NextResponse.json(
+                    { message: "Account frozen due to 5 failed attempts. Contact a Super Admin to unfreeze." },
+                    { status: 423 }
+                );
+            }
+
+            const attemptsLeft = 5 - failedAttempts;
             return NextResponse.json(
                 {
-                    message: isLocked
-                        ? "Account is frozen due to 5 consecutive invalid login attempts. Please contact a Super Admin to unfreeze it."
-                        : `Invalid email, password, or role. ${5 - failedAttempts} attempt${(5 - failedAttempts) === 1 ? "" : "s"} left before the account is frozen.`
+                    message: `Incorrect password. ${attemptsLeft} attempt${attemptsLeft === 1 ? "" : "s"} remaining before the account is frozen.`
                 },
-                { status: isLocked ? 423 : 401 }
+                { status: 401 }
             );
         }
 
+        // ── Step 4: Success — create session ──────────────────────────────────
         const sessionToken = await signSession({
             userId: user.id,
             email: user.email,
@@ -91,8 +110,8 @@ export async function POST(request: NextRequest) {
         });
 
         response.cookies.set(SESSION_COOKIE_NAME, sessionToken, getSessionCookieOptions());
-
         return response;
+
     } catch (error) {
         console.error("[login] Unexpected error:", error);
         return NextResponse.json({ message: "Internal server error. Please try again." }, { status: 500 });

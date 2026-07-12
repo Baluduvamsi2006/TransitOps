@@ -1,4 +1,5 @@
 import type { Role } from "@prisma/client";
+import { cookies } from "next/headers";
 
 import { getLandingPathForRole } from "./rbac";
 
@@ -130,3 +131,8 @@ export function toSessionInfo(session: SessionToken): SessionInfo {
 }
 
 export { getLandingPathForRole };
+
+export async function getServerSession() {
+    const cookieStore = await cookies();
+    return readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+}

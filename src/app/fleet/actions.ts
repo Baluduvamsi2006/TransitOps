@@ -2,9 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "../../lib/prisma";
+import { getServerSession } from "../../lib/jwt";
+import { canManagePath } from "../../lib/rbac";
 
 export async function addVehicle(formData: FormData) {
   try {
+    const session = await getServerSession();
+    if (!session || !canManagePath(session.role, "/fleet")) {
+      return { success: false, error: "Unauthorized: You do not have permission to manage the fleet." };
+    }
+
     const registrationNumber = formData.get("registrationNumber") as string;
     const nameModel = formData.get("nameModel") as string;
     const type = formData.get("type") as string;
@@ -39,6 +46,11 @@ export async function addVehicle(formData: FormData) {
 
 export async function updateVehicleStatus(id: string, status: string) {
   try {
+    const session = await getServerSession();
+    if (!session || !canManagePath(session.role, "/fleet")) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     await prisma.vehicle.update({
       where: { id },
       data: { status: status as any },
@@ -52,6 +64,11 @@ export async function updateVehicleStatus(id: string, status: string) {
 
 export async function editVehicleDetails(id: string, formData: FormData) {
   try {
+    const session = await getServerSession();
+    if (!session || !canManagePath(session.role, "/fleet")) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const nameModel = formData.get("nameModel") as string;
     const maxLoadCapacity = parseFloat(formData.get("maxLoadCapacity") as string);
     const odometer = parseFloat(formData.get("odometer") as string);

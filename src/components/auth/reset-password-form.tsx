@@ -7,9 +7,10 @@ export function ResetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const emailParam = searchParams.get("email") || "";
+    const codeParam = searchParams.get("code") || "";
 
     const [email, setEmail] = useState(emailParam);
-    const [code, setCode] = useState("");
+    const [code, setCode] = useState(codeParam);
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [message, setMessage] = useState<string | null>(null);
@@ -48,15 +49,15 @@ export function ResetPasswordForm() {
             }
 
             setMessage(payload.message ?? "Password updated. Redirecting to sign in...");
-            router.replace("/login");
+            router.replace("/login" as any);
             router.refresh();
         });
     };
 
     return (
-        <div className="rounded-[2rem] border border-white/8 bg-[var(--panel)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
+        <div className="rounded-4xl border border-white/8 bg-(--panel) p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">Reset password</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-(--accent)">Reset password</p>
                 <h2 className="text-2xl font-semibold text-white">Choose a new password</h2>
                 <p className="text-sm leading-6 text-(--muted-2)">Use the verification code from your email to set a fresh password.</p>
             </div>
@@ -76,7 +77,7 @@ export function ResetPasswordForm() {
                         onChange={(event) => setCode(event.target.value)}
                         required
                         autoComplete="one-time-code"
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-(--accent-2) focus:bg-white/8"
                         placeholder="123456"
                     />
                 </label>
@@ -89,7 +90,7 @@ export function ResetPasswordForm() {
                         onChange={(event) => setPassword(event.target.value)}
                         required
                         autoComplete="new-password"
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-(--accent-2) focus:bg-white/8"
                         placeholder="••••••••"
                     />
                 </label>
@@ -102,7 +103,7 @@ export function ResetPasswordForm() {
                         onChange={(event) => setConfirmPassword(event.target.value)}
                         required
                         autoComplete="new-password"
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-(--accent-2) focus:bg-white/8"
                         placeholder="••••••••"
                     />
                 </label>
@@ -113,7 +114,7 @@ export function ResetPasswordForm() {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-70"
+                    className="w-full rounded-2xl bg-(--accent) px-4 py-3 text-sm font-semibold text-(--accent-ink) transition hover:brightness-110 disabled:opacity-70"
                 >
                     {isPending ? "Updating password..." : "Update password"}
                 </button>

@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 
 import { roleLabels } from "../../lib/rbac";
 
-const loginRoles = ["SUPER_ADMIN", "FLEET_MANAGER", "DISPATCHER", "DRIVER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"] as const;
+const loginRoles = ["FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"] as const;
 
 export function LoginForm() {
     const router = useRouter();
@@ -49,41 +49,10 @@ export function LoginForm() {
         });
     };
 
-    const handleForgotPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        setError(null);
-
-        if (!email) {
-            setError("Please enter your email first to reset your password.");
-            return;
-        }
-
-        startTransition(async () => {
-            const response = await fetch("/api/auth/forgot-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
-            });
-
-            if (!response.ok) {
-                let payload: { message?: string } = {};
-                try {
-                    payload = await response.json();
-                } catch {
-                    // ignore parse errors
-                }
-                setError(payload.message ?? "Unable to send verification code.");
-                return;
-            }
-
-            router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-        });
-    };
-
     return (
-        <div className="rounded-[2rem] border border-white/8 bg-[var(--panel)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
+        <div className="rounded-4xl border border-white/8 bg-(--panel) p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">Sign in</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-(--accent)">Sign in</p>
                 <h2 className="text-2xl font-semibold text-white">Access your role</h2>
                 <p className="text-sm leading-6 text-(--muted-2)">Pick the DB-assigned role, then sign in with email and password.</p>
             </div>
@@ -97,7 +66,7 @@ export function LoginForm() {
                         onChange={(event) => setEmail(event.target.value)}
                         required
                         autoComplete="email"
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-(--accent-2) focus:bg-white/8"
                         placeholder="raven.k@transitops.in"
                     />
                 </label>
@@ -111,13 +80,13 @@ export function LoginForm() {
                             onChange={(event) => setPassword(event.target.value)}
                             required
                             autoComplete="current-password"
-                            className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 pl-4 pr-12 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-[var(--accent-2)] focus:bg-white/8"
+                            className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 pl-4 pr-12 text-sm text-white outline-none transition placeholder:text-(--muted) focus:border-(--accent-2) focus:bg-white/8"
                             placeholder="••••••••"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 flex items-center pr-4 text-[var(--muted)] hover:text-white transition"
+                            className="absolute inset-y-0 right-0 flex items-center pr-4 text-(--muted) hover:text-white transition"
                         >
                             {showPassword ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><line x1="2" y1="2" x2="22" y2="22" /></svg>
@@ -133,10 +102,10 @@ export function LoginForm() {
                     <select
                         value={role}
                         onChange={(event) => setRole(event.target.value as (typeof loginRoles)[number])}
-                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--accent-2)] focus:bg-white/8"
+                        className="w-full rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-(--accent-2) focus:bg-white/8"
                     >
                         {loginRoles.map((item) => (
-                            <option key={item} value={item} className="bg-[var(--bg)] text-white">
+                            <option key={item} value={item} className="bg-(--bg) text-white">
                                 {roleLabels[item]}
                             </option>
                         ))}
@@ -145,12 +114,12 @@ export function LoginForm() {
 
                 <div className="flex items-center justify-between gap-4 text-sm text-(--muted)">
                     <label className="flex items-center gap-2">
-                        <input type="checkbox" className="h-4 w-4 rounded border-white/20 bg-white/6 accent-[var(--accent)]" />
+                        <input type="checkbox" className="h-4 w-4 rounded border-white/20 bg-white/6 accent-(--accent)" />
                         Remember me
                     </label>
-                    <button type="button" onClick={handleForgotPassword} className="text-[var(--info)] transition hover:text-white">
+                    <Link href="/forgot-password" className="text-(--info) transition hover:text-white">
                         Forgot password?
-                    </button>
+                    </Link>
                 </div>
 
                 {error ? <p className="rounded-2xl border border-[rgba(216,90,76,0.35)] bg-[rgba(216,90,76,0.12)] px-4 py-3 text-sm text-[#ffb5ae]">{error}</p> : null}
@@ -158,7 +127,7 @@ export function LoginForm() {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110 disabled:opacity-70"
+                    className="w-full rounded-2xl bg-(--accent) px-4 py-3 text-sm font-semibold text-(--accent-ink) transition hover:brightness-110 disabled:opacity-70"
                 >
                     {isPending ? "Signing in..." : "Sign in"}
                 </button>
