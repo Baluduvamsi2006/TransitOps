@@ -1,7 +1,7 @@
 type MetricCardProps = {
   label: string;
   value: string | number;
-  tone?: "accent" | "success" | "warning" | "info" | "neutral";
+  tone?: "accent" | "success" | "warning" | "info" | "danger" | "neutral";
 };
 
 export function MetricCard({ label, value, tone = "neutral" }: MetricCardProps) {
@@ -10,6 +10,7 @@ export function MetricCard({ label, value, tone = "neutral" }: MetricCardProps) 
     success: "text-[var(--success)]",
     warning: "text-[var(--warning)]",
     info: "text-[var(--info)]",
+    danger: "text-[var(--danger)]",
     neutral: "text-white"
   }[tone];
 
