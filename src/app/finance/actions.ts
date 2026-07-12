@@ -52,6 +52,7 @@ export async function createFuelLog(formData: FormData) {
   }
 
   revalidatePath(FINANCE_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Fuel log saved successfully."));
 }
 
@@ -71,6 +72,7 @@ export async function deleteFuelLog(formData: FormData) {
   }
 
   revalidatePath(FINANCE_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Fuel log deleted successfully."));
 }
 
@@ -100,6 +102,7 @@ export async function createExpense(formData: FormData) {
   }
 
   revalidatePath(FINANCE_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Expense logged successfully."));
 }
 
@@ -119,5 +122,6 @@ export async function deleteExpense(formData: FormData) {
   }
 
   revalidatePath(FINANCE_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Expense deleted successfully."));
 }

@@ -34,6 +34,7 @@ export async function createMaintenanceLog(formData: FormData) {
     revalidatePath("/maintenance");
     revalidatePath("/trips");
     revalidatePath("/fleet");
+    revalidatePath("/reports");
 }
 
 export async function closeMaintenanceLog(formData: FormData) {
@@ -65,4 +66,5 @@ export async function closeMaintenanceLog(formData: FormData) {
     revalidatePath("/maintenance");
     revalidatePath("/trips");
     revalidatePath("/fleet");
+    revalidatePath("/reports");
 }

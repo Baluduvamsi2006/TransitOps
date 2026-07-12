@@ -109,6 +109,7 @@ export async function createDriver(formData: FormData) {
   }
 
   revalidatePath(DRIVER_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(returnTo, "message", "Driver created."));
 }
 
@@ -143,6 +144,7 @@ export async function updateDriver(formData: FormData) {
   }
 
   revalidatePath(DRIVER_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(DRIVER_PATH, "message", "Driver updated."));
 }
 
@@ -167,5 +169,6 @@ export async function deleteDriver(formData: FormData) {
   }
 
   revalidatePath(DRIVER_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(returnTo, "message", "Driver deleted."));
 }

@@ -28,6 +28,7 @@ export async function addVehicle(formData: FormData) {
     });
 
     revalidatePath("/fleet");
+    revalidatePath("/reports");
     return { success: true };
   } catch (error: any) {
     if (error.code === "P2002") {
@@ -44,6 +45,7 @@ export async function updateVehicleStatus(id: string, status: string) {
       data: { status: status as any },
     });
     revalidatePath("/fleet");
+    revalidatePath("/reports");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to update status." };
@@ -66,6 +68,7 @@ export async function editVehicleDetails(id: string, formData: FormData) {
     });
     
     revalidatePath("/fleet");
+    revalidatePath("/reports");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to update vehicle details." };

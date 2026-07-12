@@ -80,6 +80,7 @@ export async function createTrip(formData: FormData) {
   }
 
   revalidatePath(TRIPS_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip drafted successfully."));
 }
 
@@ -134,6 +135,7 @@ export async function dispatchTrip(formData: FormData) {
   }
 
   revalidatePath(TRIPS_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip dispatched successfully."));
 }
 
@@ -143,8 +145,8 @@ export async function completeTrip(formData: FormData) {
   const fuelLiters = readNumber(formData, "fuelLiters");
   const fuelCost = readNumber(formData, "fuelCost");
 
-  if (!id || finalOdometer <= 0) {
-    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Odometer reading is required."));
+  if (!id) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Missing trip ID."));
   }
 
   const trip = await prisma.trip.findUnique({
@@ -156,7 +158,12 @@ export async function completeTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Trip not found."));
   }
 
-  if (finalOdometer < trip.vehicle.odometer) {
+  if (trip.status !== TripStatus.DISPATCHED) {
+    redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Only dispatched trips can be completed."));
+  }
+
+  // Allow finalOdometer = 0 for vehicles with no odometer tracking; just require it's >= current
+  if (finalOdometer > 0 && finalOdometer < trip.vehicle.odometer) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", `Final odometer (${finalOdometer} km) cannot be less than current odometer (${trip.vehicle.odometer} km).`));
   }
 
@@ -196,6 +203,9 @@ export async function completeTrip(formData: FormData) {
   }
 
   revalidatePath(TRIPS_PATH);
+  revalidatePath("/reports");
+  revalidatePath("/fleet");
+  revalidatePath("/finance");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip completed successfully."));
 }
 
@@ -243,6 +253,7 @@ export async function cancelTrip(formData: FormData) {
   }
 
   revalidatePath(TRIPS_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip cancelled."));
 }
 
@@ -262,5 +273,6 @@ export async function deleteTrip(formData: FormData) {
   }
 
   revalidatePath(TRIPS_PATH);
+  revalidatePath("/reports");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip deleted."));
 }
