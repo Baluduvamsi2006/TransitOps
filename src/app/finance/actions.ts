@@ -51,8 +51,7 @@ export async function createFuelLog(formData: FormData) {
     redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Failed to log fuel entry."));
   }
 
-  revalidatePath(FINANCE_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Fuel log saved successfully."));
 }
 
@@ -71,8 +70,7 @@ export async function deleteFuelLog(formData: FormData) {
     redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Failed to delete fuel log."));
   }
 
-  revalidatePath(FINANCE_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Fuel log deleted successfully."));
 }
 
@@ -101,8 +99,7 @@ export async function createExpense(formData: FormData) {
     redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Failed to log expense."));
   }
 
-  revalidatePath(FINANCE_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Expense logged successfully."));
 }
 
@@ -121,7 +118,6 @@ export async function deleteExpense(formData: FormData) {
     redirectTo(buildRedirectPath(FINANCE_PATH, "error", "Failed to delete expense."));
   }
 
-  revalidatePath(FINANCE_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(FINANCE_PATH, "message", "Expense deleted successfully."));
 }

@@ -79,8 +79,7 @@ export async function createTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Failed to draft the trip."));
   }
 
-  revalidatePath(TRIPS_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip drafted successfully."));
 }
 
@@ -134,8 +133,7 @@ export async function dispatchTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Failed to dispatch the trip."));
   }
 
-  revalidatePath(TRIPS_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip dispatched successfully."));
 }
 
@@ -202,10 +200,7 @@ export async function completeTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Failed to complete the trip."));
   }
 
-  revalidatePath(TRIPS_PATH);
-  revalidatePath("/reports");
-  revalidatePath("/fleet");
-  revalidatePath("/finance");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip completed successfully."));
 }
 
@@ -252,8 +247,7 @@ export async function cancelTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Failed to cancel the trip."));
   }
 
-  revalidatePath(TRIPS_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip cancelled."));
 }
 
@@ -272,7 +266,6 @@ export async function deleteTrip(formData: FormData) {
     redirectTo(buildRedirectPath(TRIPS_PATH, "error", "Failed to delete the trip."));
   }
 
-  revalidatePath(TRIPS_PATH);
-  revalidatePath("/reports");
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(TRIPS_PATH, "message", "Trip deleted."));
 }
