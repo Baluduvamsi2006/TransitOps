@@ -99,12 +99,14 @@ export async function saveVehicleDocument(id: string, name: string, url: string)
     const vehicle = await prisma.vehicle.findUnique({ where: { id } });
     if (!vehicle) return { success: false, error: "Vehicle not found" };
 
-    const existing = vehicle.documents;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const existing = (vehicle as any).documents;
     const docs: { name: string; url: string; dateAdded: string }[] =
       Array.isArray(existing) ? (existing as { name: string; url: string; dateAdded: string }[]) : [];
     docs.push({ name, url, dateAdded: new Date().toISOString() });
 
-    await prisma.vehicle.update({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (prisma.vehicle.update as any)({
       where: { id },
       data: { documents: docs },
     });
@@ -126,13 +128,15 @@ export async function deleteVehicleDocument(id: string, docIndex: number) {
     const vehicle = await prisma.vehicle.findUnique({ where: { id } });
     if (!vehicle) return { success: false, error: "Vehicle not found" };
 
-    const existing = vehicle.documents;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const existing = (vehicle as any).documents;
     const docs: { name: string; url: string; dateAdded: string }[] =
       Array.isArray(existing) ? (existing as { name: string; url: string; dateAdded: string }[]) : [];
 
     if (docIndex >= 0 && docIndex < docs.length) {
       docs.splice(docIndex, 1);
-      await prisma.vehicle.update({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (prisma.vehicle.update as any)({
         where: { id },
         data: { documents: docs },
       });
