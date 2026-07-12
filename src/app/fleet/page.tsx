@@ -17,7 +17,7 @@ function getStatusTone(status: string) {
   }
 }
 
-export default async function FleetPage(props: { searchParams?: Promise<{ search?: string; type?: string; status?: string }> }) {
+export default async function FleetPage(props: { searchParams?: Promise<{ search?: string; type?: string; status?: string; sort?: string }> }) {
   const searchParams = props.searchParams ? await props.searchParams : {};
   const vehicles = await prisma.vehicle.findMany({
     orderBy: { createdAt: "desc" },
