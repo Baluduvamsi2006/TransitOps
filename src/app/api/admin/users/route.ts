@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
             role: true,
             lastLoginAt: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            lockedUntil: true,
+            failedLoginAttempts: true
         }
     });
 
@@ -73,7 +75,9 @@ export async function POST(request: NextRequest) {
             name,
             email,
             password: hashPassword(password),
-            role
+            role,
+            failedLoginAttempts: 0,
+            lockedUntil: null
         },
         select: {
             id: true,
@@ -85,4 +89,37 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ user: createdUser }, { status: 201 });
+}
+
+export async function PATCH(request: NextRequest) {
+    const session = await requireSuperAdmin(request);
+
+    if (!session) {
+        return NextResponse.json({ message: "Super admin access required." }, { status: 403 });
+    }
+
+    try {
+        const body = await request.json();
+        const { userId, action } = body;
+
+        if (action === "unfreeze") {
+            if (!userId) {
+                return NextResponse.json({ message: "User ID is required." }, { status: 400 });
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    failedLoginAttempts: 0,
+                    lockedUntil: null
+                }
+            });
+
+            return NextResponse.json({ ok: true, message: "User unfrozen successfully." });
+        }
+
+        return NextResponse.json({ message: "Invalid action." }, { status: 400 });
+    } catch (error) {
+        return NextResponse.json({ message: "Internal server error." }, { status: 500 });
+    }
 }
