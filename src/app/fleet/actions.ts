@@ -49,3 +49,25 @@ export async function updateVehicleStatus(id: string, status: string) {
     return { success: false, error: "Failed to update status." };
   }
 }
+
+export async function editVehicleDetails(id: string, formData: FormData) {
+  try {
+    const nameModel = formData.get("nameModel") as string;
+    const maxLoadCapacity = parseFloat(formData.get("maxLoadCapacity") as string);
+    const odometer = parseFloat(formData.get("odometer") as string);
+
+    if (!nameModel || isNaN(maxLoadCapacity) || isNaN(odometer)) {
+      return { success: false, error: "Invalid data." };
+    }
+
+    await prisma.vehicle.update({
+      where: { id },
+      data: { nameModel, maxLoadCapacity, odometer },
+    });
+    
+    revalidatePath("/fleet");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update vehicle details." };
+  }
+}

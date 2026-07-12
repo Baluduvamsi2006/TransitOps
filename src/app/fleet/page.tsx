@@ -3,7 +3,7 @@ import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../comp
 import { prisma } from "../../lib/prisma";
 import { AddVehicleButton } from "./add-vehicle-button";
 import { VehicleFilters } from "./vehicle-filters";
-import { StatusUpdater } from "./status-updater";
+import { VehicleActionMenu } from "./vehicle-action-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,12 @@ function getStatusTone(status: string) {
 export default async function FleetPage(props: { searchParams?: Promise<{ search?: string; type?: string; status?: string }> }) {
   const searchParams = props.searchParams ? await props.searchParams : {};
   const vehicles = await prisma.vehicle.findMany({
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt: "desc" },
+    include: {
+      fuelLogs: true,
+      maintenanceLogs: true,
+      expenses: true,
+    }
   });
 
   let filteredVehicles = vehicles;
@@ -52,16 +57,26 @@ export default async function FleetPage(props: { searchParams?: Promise<{ search
           <VehicleFilters />
 
           <Table
-            columns={["Reg no.", "Vehicle", "Type", "Capacity", "Odometer", "Cost", "Status"]}
-            rows={filteredVehicles.map((vehicle) => [
-              vehicle.registrationNumber,
-              vehicle.nameModel,
-              vehicle.type,
-              `${vehicle.maxLoadCapacity} kg`,
-              `${vehicle.odometer} km`,
-              `₹${vehicle.acquisitionCost.toLocaleString()}`,
-              <StatusUpdater key={`${vehicle.id}-status`} vehicleId={vehicle.id} initialStatus={vehicle.status} />
-            ])}
+            columns={["Reg no.", "Vehicle", "Type", "Capacity", "Odometer", "Total Cost", "Status", ""]}
+            rows={filteredVehicles.map((vehicle) => {
+              const totalCost = vehicle.acquisitionCost 
+                + vehicle.fuelLogs.reduce((sum, log) => sum + log.cost, 0)
+                + vehicle.maintenanceLogs.reduce((sum, log) => sum + log.cost, 0)
+                + vehicle.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+              return [
+                vehicle.registrationNumber,
+                vehicle.nameModel,
+                vehicle.type,
+                `${vehicle.maxLoadCapacity} kg`,
+                `${vehicle.odometer} km`,
+                `₹${totalCost.toLocaleString()}`,
+                <Pill key={`${vehicle.id}-status`} tone={getStatusTone(vehicle.status) as any}>
+                  {vehicle.status.replace("_", " ")}
+                </Pill>,
+                <VehicleActionMenu key={`${vehicle.id}-actions`} vehicle={vehicle} />
+              ];
+            })}
           />
         </Panel>
       </div>

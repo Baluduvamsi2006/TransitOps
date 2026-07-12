@@ -43,7 +43,7 @@ export function Panel({ title, subtitle, children }: PanelProps) {
 type PageHeaderProps = {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
 };
 
 export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
@@ -51,7 +51,7 @@ export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
     <div className="animate-fade-up mb-6 space-y-3">
       <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--accent)]">{eyebrow}</p>
       <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
-      <p className="max-w-3xl text-sm leading-7 text-[var(--muted-2)] sm:text-base">{description}</p>
+      {description ? <p className="max-w-3xl text-sm leading-7 text-[var(--muted-2)] sm:text-base">{description}</p> : null}
     </div>
   );
 }

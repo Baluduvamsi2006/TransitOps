@@ -15,6 +15,7 @@ async function main() {
   await prisma.fuelLog.deleteMany();
   await prisma.expense.deleteMany();
   await prisma.vehicle.deleteMany();
+  await prisma.driver.deleteMany();
 
   const indianVehicles: Prisma.VehicleCreateInput[] = [
     {
@@ -98,6 +99,63 @@ async function main() {
       where: { registrationNumber: v.registrationNumber },
       update: {},
       create: v,
+    });
+  }
+
+  const indianDrivers: Prisma.DriverCreateInput[] = [
+    {
+      name: "Ramesh Kumar",
+      licenseNumber: "DL1420101234567",
+      licenseCategory: "HMV",
+      licenseExpiryDate: new Date("2028-05-12"),
+      contactNumber: "+919876543210",
+      safetyScore: 98.5,
+      status: "AVAILABLE",
+    },
+    {
+      name: "Suresh Singh",
+      licenseNumber: "MH0420159876543",
+      licenseCategory: "LMV",
+      licenseExpiryDate: new Date("2026-11-20"),
+      contactNumber: "+918765432109",
+      safetyScore: 92.0,
+      status: "ON_TRIP",
+    },
+    {
+      name: "Rajesh Patel",
+      licenseNumber: "GJ0120184561239",
+      licenseCategory: "HMV",
+      licenseExpiryDate: new Date("2029-01-15"),
+      contactNumber: "+917654321098",
+      safetyScore: 85.5,
+      status: "OFF_DUTY",
+    },
+    {
+      name: "Abdul Khan",
+      licenseNumber: "UP1620127894561",
+      licenseCategory: "LMV",
+      licenseExpiryDate: new Date("2027-08-30"),
+      contactNumber: "+916543210987",
+      safetyScore: 99.0,
+      status: "AVAILABLE",
+    },
+    {
+      name: "Manoj Desai",
+      licenseNumber: "MH0120113216549",
+      licenseCategory: "HMV",
+      licenseExpiryDate: new Date("2025-10-05"),
+      contactNumber: "+919988776655",
+      safetyScore: 78.0,
+      status: "SUSPENDED",
+    },
+  ];
+
+  console.log("Seeding database with Indian drivers...");
+  for (const d of indianDrivers) {
+    await prisma.driver.upsert({
+      where: { licenseNumber: d.licenseNumber },
+      update: {},
+      create: d,
     });
   }
 
