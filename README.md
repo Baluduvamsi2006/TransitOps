@@ -78,22 +78,22 @@ The UI follows a **premium dark‑mode / glass‑morphism** design, with an anim
 ```mermaid
 graph TD
     subgraph Client
-        UI[🖥️ UI (React/TSX)]
-        ANIM[✨ GSAP Animations]
-        BUTTON[🔘 SubmitButton]
+        UI["UI - React/TSX"]
+        ANIM["GSAP Animations"]
+        BUTTON["SubmitButton"]
     end
 
     subgraph Server
-        NA[🌐 Next.js Server Actions]
-        AUTH[🔐 JWT Middleware]
-        VALID[✅ Zod Validation]
-        PRISMA[🗄️ Prisma ORM]
-        DB[🗂️ PostgreSQL]
+        NA["Next.js Server Actions"]
+        AUTH["JWT Middleware"]
+        VALID["Zod Validation"]
+        PRISMA["Prisma ORM"]
+        DB["PostgreSQL"]
     end
 
     subgraph Services
-        EMAIL[Nodemailer (OTP, alerts)]
-        REPORT[CSV Export Service]
+        EMAIL["Nodemailer - OTP, Alerts"]
+        REPORT["CSV Export Service"]
     end
 
     UI --> BUTTON
