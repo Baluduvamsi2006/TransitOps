@@ -4,10 +4,12 @@ import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../comp
 import { prisma } from "../../lib/prisma";
 import { createTrip, dispatchTrip, completeTrip, cancelTrip, deleteTrip } from "./actions";
 import { TripStatus } from "@prisma/client";
+import { TripFilters } from "./trip-filters";
 
 type TripsPageProps = {
   searchParams?: Promise<{
-    q?: string;
+    search?: string;
+    status?: string;
     complete?: string;
     error?: string;
     message?: string;
@@ -25,7 +27,8 @@ function toStatusTone(status: string) {
 
 export default async function TripsPage({ searchParams }: TripsPageProps) {
   const params = (await searchParams) ?? {};
-  const searchTerm = (params.q ?? "").trim().toLowerCase();
+  const searchTerm = (params.search ?? "").trim().toLowerCase();
+  const filterStatus = params.status ?? "All";
   
   // Manage rights are enabled by default since authentication is handled externally
   const canManage = true;
@@ -41,24 +44,28 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
     }
   });
 
-  // Apply search filtering
-  const visibleTrips = searchTerm
-    ? trips.filter((trip) => {
-        const haystack = [
-          trip.id,
-          trip.source,
-          trip.destination,
-          trip.vehicle.registrationNumber,
-          trip.vehicle.nameModel,
-          trip.driver.name,
-          trip.status,
-          trip.cargoWeight.toString(),
-          trip.plannedDistance.toString()
-        ].join(" ").toLowerCase();
+  // Apply search and status filtering
+  let visibleTrips = trips;
+  if (searchTerm) {
+    visibleTrips = visibleTrips.filter((trip) => {
+      const haystack = [
+        trip.id,
+        trip.source,
+        trip.destination,
+        trip.vehicle.registrationNumber,
+        trip.vehicle.nameModel,
+        trip.driver.name,
+        trip.status,
+        trip.cargoWeight.toString(),
+        trip.plannedDistance.toString()
+      ].join(" ").toLowerCase();
 
-        return haystack.includes(searchTerm);
-      })
-    : trips;
+      return haystack.includes(searchTerm);
+    });
+  }
+  if (filterStatus && filterStatus !== "All") {
+    visibleTrips = visibleTrips.filter((trip) => trip.status === filterStatus);
+  }
 
   // Filter available vehicles and drivers for dropdowns
   const availableVehicles = await prisma.vehicle.findMany({
@@ -304,9 +311,10 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
         </Panel>
       </div>
 
-      <Panel title="Live trips" subtitle={searchTerm ? `Showing matches for "${params.q}"` : "Draft, dispatched, completed, and cancelled trips."}>
-        {searchTerm && visibleTrips.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No trips match your search.</div>
+      <Panel title="Live trips" subtitle="Draft, dispatched, completed, and cancelled trips.">
+        <TripFilters />
+        {visibleTrips.length === 0 ? (
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)] mb-4">No trips match your search filters.</div>
         ) : null}
         <Table
           columns={["Route", "Vehicle", "Driver", "Weight", "Distance", "Status", "Actions"]}

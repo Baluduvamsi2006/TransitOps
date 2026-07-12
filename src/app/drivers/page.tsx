@@ -6,11 +6,13 @@ import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../comp
 import { prisma } from "../../lib/prisma";
 import { currentTimestamp } from "../../lib/time";
 import { createDriver, deleteDriver, updateDriver } from "./actions";
+import { DriverFilters } from "./driver-filters";
 
 type DriversPageProps = {
   searchParams?: Promise<{
     edit?: string;
-    q?: string;
+    search?: string;
+    status?: string;
     error?: string;
     message?: string;
   }>;
@@ -45,24 +47,29 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     orderBy: [{ status: "asc" }, { name: "asc" }]
   });
   const nowTime = currentTimestamp();
-  const searchTerm = (params.q ?? "").trim().toLowerCase();
+  const searchTerm = (params.search ?? "").trim().toLowerCase();
+  const filterStatus = params.status ?? "All";
 
   const selectedDriver = params.edit ? drivers.find((driver) => driver.id === params.edit) : undefined;
-  const visibleDrivers = searchTerm
-    ? drivers.filter((driver) => {
-        const haystack = [driver.name, driver.licenseNumber, driver.licenseCategory, driver.contactNumber, driver.status]
-          .join(" ")
-          .toLowerCase();
 
-        return haystack.includes(searchTerm);
-      })
-    : drivers;
+  let visibleDrivers = drivers;
+  if (searchTerm) {
+    visibleDrivers = visibleDrivers.filter((driver) => {
+      const haystack = [driver.name, driver.licenseNumber, driver.licenseCategory, driver.contactNumber]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(searchTerm);
+    });
+  }
+  if (filterStatus && filterStatus !== "All") {
+    visibleDrivers = visibleDrivers.filter((driver) => driver.status === filterStatus);
+  }
 
-  const availableDrivers = visibleDrivers.filter((driver) => driver.status === "AVAILABLE").length;
-  const onTripDrivers = visibleDrivers.filter((driver) => driver.status === "ON_TRIP").length;
-  const offDutyDrivers = visibleDrivers.filter((driver) => driver.status === "OFF_DUTY").length;
-  const suspendedDrivers = visibleDrivers.filter((driver) => driver.status === "SUSPENDED").length;
-  const expiringSoonDrivers = visibleDrivers.filter((driver) => {
+  const availableDrivers = drivers.filter((driver) => driver.status === "AVAILABLE").length;
+  const onTripDrivers = drivers.filter((driver) => driver.status === "ON_TRIP").length;
+  const offDutyDrivers = drivers.filter((driver) => driver.status === "OFF_DUTY").length;
+  const suspendedDrivers = drivers.filter((driver) => driver.status === "SUSPENDED").length;
+  const expiringSoonDrivers = drivers.filter((driver) => {
     const daysUntilExpiry = (driver.licenseExpiryDate.getTime() - nowTime) / (1000 * 60 * 60 * 24);
     return daysUntilExpiry <= 30;
   }).length;
@@ -238,14 +245,15 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
         </Panel>
       </div>
 
-      <Panel title="Driver roster" subtitle={searchTerm ? `Showing matches for "${params.q}"` : "Edit or delete records from the live driver table."}>
-        {searchTerm && visibleDrivers.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No drivers match your search.</div>
+      <Panel title="Driver roster" subtitle="Edit or delete records from the live driver table.">
+        <DriverFilters />
+        {visibleDrivers.length === 0 ? (
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)] mb-4">No drivers match your search filters.</div>
         ) : null}
         <Table
           columns={["Driver", "License", "Category", "Expiry", "Safety", "Status", "Actions"]}
           rows={visibleDrivers.map((driver) => [
-            <Link key={`${driver.id}-name`} href={`/drivers?edit=${driver.id}&q=${encodeURIComponent(params.q ?? "")}`} className="font-medium text-white transition hover:text-[var(--accent)]">
+            <Link key={`${driver.id}-name`} href={`/drivers?edit=${driver.id}&search=${encodeURIComponent(params.search ?? "")}&status=${encodeURIComponent(params.status ?? "")}`} className="font-medium text-white transition hover:text-[var(--accent)]">
               {driver.name}
             </Link>,
             driver.licenseNumber,
