@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
+import { DashboardFilters } from "../components/dashboard-filters";
 import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
 import { prisma } from "../lib/prisma";
 import { TripStatus, VehicleStatus } from "@prisma/client";
@@ -24,7 +25,15 @@ function toStatusTone(status: string) {
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+type DashboardProps = {
+  searchParams?: Promise<{
+    type?: string;
+    status?: string;
+    region?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: DashboardProps) {
   const cookieStore = await cookies();
   const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 
@@ -32,8 +41,18 @@ export default async function Home() {
     redirect("/login");
   }
 
+  const params = (await searchParams) ?? {};
+  const vType = params.type && params.type !== "All" ? params.type : undefined;
+  const vStatus = params.status && params.status !== "All" ? params.status as VehicleStatus : undefined;
+  const vRegion = params.region && params.region !== "All" ? params.region : undefined;
+
   // 1. Vehicles
-  const vehicles = await prisma.vehicle.findMany();
+  const vehicleWhere = {
+    ...(vType ? { type: vType } : {}),
+    ...(vStatus ? { status: vStatus } : {}),
+  };
+
+  const vehicles = await prisma.vehicle.findMany({ where: vehicleWhere });
   const totalActive = vehicles.filter((v) => v.status !== "RETIRED").length;
   const available = vehicles.filter((v) => v.status === "AVAILABLE").length;
   const inShop = vehicles.filter((v) => v.status === "IN_SHOP").length;
@@ -43,7 +62,16 @@ export default async function Home() {
   const fleetUtilization = totalActive > 0 ? ((onTrip / totalActive) * 100).toFixed(0) : "0";
 
   // 2. Trips
+  // Rough textual region match on source or destination for Trip-based filtering
+  const tripWhere = vRegion ? {
+    OR: [
+      { source: { contains: vRegion, mode: "insensitive" as const } },
+      { destination: { contains: vRegion, mode: "insensitive" as const } }
+    ]
+  } : {};
+
   const trips = await prisma.trip.findMany({
+    where: tripWhere,
     orderBy: { createdAt: "desc" },
     include: { vehicle: true, driver: true }
   });
@@ -87,6 +115,25 @@ export default async function Home() {
     orderBy: { createdAt: "desc" }
   });
 
+  // 5. Bonus Analytics: Expired Licenses & Top Maintenance Cost Vehicles
+  const expiredLicenses = await prisma.driver.count({
+    where: { licenseExpiryDate: { lt: new Date() } }
+  });
+
+  const maintByVehicle = await prisma.maintenanceLog.groupBy({
+    by: ['vehicleId'],
+    _sum: { cost: true },
+    orderBy: { _sum: { cost: 'desc' } },
+    take: 3
+  });
+
+  const topMaintVehicles = await Promise.all(
+    maintByVehicle.map(async (m) => {
+      const v = await prisma.vehicle.findUnique({ where: { id: m.vehicleId } });
+      return { vehicle: v!, totalCost: m._sum.cost || 0 };
+    })
+  );
+
   return (
     <AppShell activePath="/">
       <PageHeader
@@ -94,6 +141,15 @@ export default async function Home() {
         title="Fleet command center"
         description="A live reference operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
       />
+
+      {expiredLicenses > 0 && (
+        <div className="mb-6 rounded-2xl border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] p-4 text-[var(--danger)] animate-fade-up">
+          <strong className="block text-white mb-1">Compliance Alert</strong>
+          {expiredLicenses} driver{expiredLicenses === 1 ? '' : 's'} {expiredLicenses === 1 ? 'has' : 'have'} expired licenses. Dispatch limits automatically enforced.
+        </div>
+      )}
+
+      <DashboardFilters />
 
       <StatGrid>
         {dashboardKpis.map((metric) => (
@@ -167,6 +223,23 @@ export default async function Home() {
               new Date(record.date).toLocaleDateString(),
               formatCurrency(record.cost),
               <Pill key={`${record.id}-maint`} tone="warning">Active</Pill>
+            ])}
+          />
+        )}
+      </Panel>
+
+      <Panel title="Highest Maintenance Assets" subtitle="Analytics on which vehicles cost the most to maintain globally">
+        {topMaintVehicles.length === 0 ? (
+          <div className="text-sm text-[var(--muted)] py-4">No maintenance data available.</div>
+        ) : (
+          <Table
+            columns={["Vehicle", "Registration", "Total Maint. Cost"]}
+            rows={topMaintVehicles.map(m => [
+              m.vehicle.nameModel,
+              m.vehicle.registrationNumber,
+              <span key={`cost-${m.vehicle.id}`} className="font-mono text-[var(--danger)]">
+                {formatCurrency(m.totalCost)}
+              </span>
             ])}
           />
         )}
