@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useTransition } from "react";
-
 import { navItems } from "../lib/transitops-data";
 
 type AppShellProps = {
   children: React.ReactNode;
   activePath?: string;
+  user?: {
+    name: string;
+    email: string;
+    role: string;
+  } | null;
 };
 
-export function AppShell({ children, activePath }: AppShellProps) {
+export function AppShell({ children, activePath, user }: AppShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,6 +49,13 @@ export function AppShell({ children, activePath }: AppShellProps) {
       updateSearch(nextQuery);
     }, 180);
   }
+
+  // Display mock user profile if session is not active
+  const currentUser = user ?? {
+    name: "Fleet Manager",
+    email: "manager@transitops.com",
+    role: "FLEET_MANAGER"
+  };
 
   return (
     <div className="min-h-screen bg-(--bg) text-(--text)">
@@ -81,10 +92,13 @@ export function AppShell({ children, activePath }: AppShellProps) {
           </nav>
 
           <div className="mt-auto rounded-3xl border border-white/8 bg-white/6 p-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-(--muted)">Demo mode</p>
-            <p className="mt-2 text-sm leading-6 text-white/88">
-              The app is wired for data review and branch work. Authentication comes next.
-            </p>
+            <div>
+              <p className="text-[10px] uppercase font-semibold tracking-[0.24em] text-(--accent)">
+                {currentUser.role.replace("_", " ")}
+              </p>
+              <p className="mt-1 text-sm font-bold text-white leading-normal truncate">{currentUser.name}</p>
+              <p className="text-xs font-mono text-(--muted) truncate">{currentUser.email}</p>
+            </div>
           </div>
         </aside>
 
@@ -95,10 +109,10 @@ export function AppShell({ children, activePath }: AppShellProps) {
 
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">
-                  Transport Operations Demo
+                  Role: {currentUser.role.replace("_", " ")}
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-(--accent) text-sm font-bold text-(--accent-ink)">
-                  U
+                  {currentUser.name[0].toUpperCase()}
                 </div>
               </div>
             </div>
