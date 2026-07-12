@@ -65,6 +65,7 @@ model Vehicle {
   maintenanceLogs    MaintenanceLog[]
   fuelLogs           FuelLog[]
   expenses           Expense[]
+  documents          Json?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 }

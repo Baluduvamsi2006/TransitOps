@@ -28,7 +28,14 @@ export default async function FleetPage(props: { searchParams?: Promise<{ search
     }
   });
 
-  let filteredVehicles = vehicles;
+  let filteredVehicles = vehicles.map(v => {
+    const totalCost = v.acquisitionCost 
+      + v.fuelLogs.reduce((sum, log) => sum + log.cost, 0)
+      + v.maintenanceLogs.reduce((sum, log) => sum + log.cost, 0)
+      + v.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    return { ...v, totalCost };
+  });
+
   if (searchParams?.search) {
     const s = searchParams.search.toLowerCase();
     filteredVehicles = filteredVehicles.filter(v => v.registrationNumber.toLowerCase().includes(s) || v.nameModel.toLowerCase().includes(s));
@@ -38,6 +45,17 @@ export default async function FleetPage(props: { searchParams?: Promise<{ search
   }
   if (searchParams?.status && searchParams.status !== "All") {
     filteredVehicles = filteredVehicles.filter(v => v.status.trim().toLowerCase() === String(searchParams.status).trim().toLowerCase());
+  }
+
+  const sort = searchParams?.sort || "newest";
+  if (sort === "capacity-desc") {
+    filteredVehicles.sort((a, b) => b.maxLoadCapacity - a.maxLoadCapacity);
+  } else if (sort === "odometer-desc") {
+    filteredVehicles.sort((a, b) => b.odometer - a.odometer);
+  } else if (sort === "cost-desc") {
+    filteredVehicles.sort((a, b) => b.totalCost - a.totalCost);
+  } else {
+    filteredVehicles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   return (
