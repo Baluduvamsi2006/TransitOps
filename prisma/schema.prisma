@@ -42,6 +42,8 @@ model User {
   password               String
   name                   String
   role                   Role
+  failedLoginAttempts    Int      @default(0)
+  lockedUntil            DateTime?
   lastLoginAt            DateTime?
   passwordResetToken     String?  @unique
   passwordResetExpiresAt  DateTime?
