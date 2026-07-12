@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
-import { DashboardFilters } from "../components/dashboard-filters";
 import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
 import { prisma } from "../lib/prisma";
-import { TripStatus, VehicleStatus } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 function toStatusTone(status: string) {
   return (
@@ -23,17 +24,15 @@ function toStatusTone(status: string) {
   ) as "success" | "info" | "warning" | "danger" | "muted";
 }
 
-export const dynamic = "force-dynamic";
+function fmtRupees(n: number) {
+  return "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(n);
+}
 
-type DashboardProps = {
-  searchParams?: Promise<{
-    type?: string;
-    status?: string;
-    region?: string;
-  }>;
-};
+function calcRevenue(distance: number, weight: number) {
+  return distance * (15 + weight * 0.005);
+}
 
-export default async function Home({ searchParams }: DashboardProps) {
+export default async function Home() {
   const cookieStore = await cookies();
   const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 
@@ -41,205 +40,223 @@ export default async function Home({ searchParams }: DashboardProps) {
     redirect("/login");
   }
 
-  const params = (await searchParams) ?? {};
-  const vType = params.type && params.type !== "All" ? params.type : undefined;
-  const vStatus = params.status && params.status !== "All" ? params.status as VehicleStatus : undefined;
-  const vRegion = params.region && params.region !== "All" ? params.region : undefined;
-
-  // 1. Vehicles
-  const vehicleWhere = {
-    ...(vType ? { type: vType } : {}),
-    ...(vStatus ? { status: vStatus } : {}),
-  };
-
-  const vehicles = await prisma.vehicle.findMany({ where: vehicleWhere });
-  const totalActive = vehicles.filter((v) => v.status !== "RETIRED").length;
+  // ── Vehicles ────────────────────────────────────────────────────────────────
+  const vehicles = await prisma.vehicle.findMany();
+  const totalVehicles = vehicles.length;
   const available = vehicles.filter((v) => v.status === "AVAILABLE").length;
-  const inShop = vehicles.filter((v) => v.status === "IN_SHOP").length;
   const onTrip = vehicles.filter((v) => v.status === "ON_TRIP").length;
+  const inShop = vehicles.filter((v) => v.status === "IN_SHOP").length;
   const retired = vehicles.filter((v) => v.status === "RETIRED").length;
+  const totalActive = totalVehicles - retired;
+  const fleetUtilization = totalActive > 0 ? Math.round((onTrip / totalActive) * 100) : 0;
 
-  const fleetUtilization = totalActive > 0 ? ((onTrip / totalActive) * 100).toFixed(0) : "0";
-
-  // 2. Trips
-  // Rough textual region match on source or destination for Trip-based filtering
-  const tripWhere = vRegion ? {
-    OR: [
-      { source: { contains: vRegion, mode: "insensitive" as const } },
-      { destination: { contains: vRegion, mode: "insensitive" as const } }
-    ]
-  } : {};
-
+  // ── Trips ────────────────────────────────────────────────────────────────────
   const trips = await prisma.trip.findMany({
-    where: tripWhere,
     orderBy: { createdAt: "desc" },
     include: { vehicle: true, driver: true }
   });
+  const completedTrips = trips.filter((t) => t.status === "COMPLETED");
   const activeTrips = trips.filter((t) => t.status === "DISPATCHED").length;
   const pendingTrips = trips.filter((t) => t.status === "DRAFT").length;
+  const completedCount = completedTrips.length;
 
-  // 3. Drivers
-  const driversOnDuty = await prisma.driver.count({ where: { status: "ON_TRIP" } });
+  // Revenue from completed trips
+  const totalRevenue = completedTrips.reduce(
+    (sum, t) => sum + calcRevenue(t.plannedDistance, t.cargoWeight),
+    0
+  );
 
-  // 4. Financials (Operational Cost)
+  // ── Drivers ──────────────────────────────────────────────────────────────────
+  const drivers = await prisma.driver.findMany();
+  const totalDrivers = drivers.length;
+  const availableDrivers = drivers.filter((d) => d.status === "AVAILABLE").length;
+  const driversOnDuty = drivers.filter((d) => d.status === "ON_TRIP").length;
+  const suspendedDrivers = drivers.filter((d) => d.status === "SUSPENDED").length;
+
+  // ── Financials ────────────────────────────────────────────────────────────────
   const fuelAgg = await prisma.fuelLog.aggregate({ _sum: { cost: true } });
   const maintAgg = await prisma.maintenanceLog.aggregate({ _sum: { cost: true } });
   const expAgg = await prisma.expense.aggregate({ _sum: { amount: true } });
-  const totalCost = (fuelAgg._sum.cost || 0) + (maintAgg._sum.cost || 0) + (expAgg._sum.amount || 0);
+  const totalFuel = fuelAgg._sum.cost || 0;
+  const totalMaint = maintAgg._sum.cost || 0;
+  const totalOther = expAgg._sum.amount || 0;
+  const totalOpCost = totalFuel + totalMaint + totalOther;
+  const netProfit = totalRevenue - totalOpCost;
 
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
-  };
-
-  const dashboardKpis = [
-    { label: "Active Vehicles", value: totalActive.toString(), tone: "accent" as const },
-    { label: "Available Vehicles", value: available.toString(), tone: "success" as const },
-    { label: "In Maintenance", value: inShop.toString(), tone: "warning" as const },
-    { label: "Active Trips", value: activeTrips.toString(), tone: "info" as const },
-    { label: "Pending Trips", value: pendingTrips.toString(), tone: "neutral" as const },
-    { label: "Drivers On Duty", value: driversOnDuty.toString(), tone: "neutral" as const },
-    { label: "Fleet Utilization", value: `${fleetUtilization}%`, tone: "accent" as const },
-    { label: "Operational Cost", value: formatCurrency(totalCost), tone: "warning" as const }
-  ];
-
-  const vehicleStatusBars = [
-    { label: "Available", count: available, width: totalActive ? `${(available / totalActive) * 100}%` : "0%", fill: "bg-[var(--success)]" },
-    { label: "On Trip", count: onTrip, width: totalActive ? `${(onTrip / totalActive) * 100}%` : "0%", fill: "bg-[var(--info)]" },
-    { label: "In Shop", count: inShop, width: totalActive ? `${(inShop / totalActive) * 100}%` : "0%", fill: "bg-[var(--warning)]" },
-    { label: "Retired", count: retired, width: vehicles.length ? `${(retired / vehicles.length) * 100}%` : "0%", fill: "bg-[var(--danger)]" }
-  ];
-
+  // ── Maintenance queue ─────────────────────────────────────────────────────────
   const maintenanceQueue = await prisma.maintenanceLog.findMany({
     where: { isOpen: true },
     include: { vehicle: true },
     orderBy: { createdAt: "desc" }
   });
 
-  // 5. Bonus Analytics: Expired Licenses & Top Maintenance Cost Vehicles
-  const expiredLicenses = await prisma.driver.count({
-    where: { licenseExpiryDate: { lt: new Date() } }
-  });
+  // ── KPI cards ─────────────────────────────────────────────────────────────────
+  const topKpis = [
+    { label: "Total Revenue", value: fmtRupees(totalRevenue), tone: "success" as const },
+    { label: "Operational Cost", value: fmtRupees(totalOpCost), tone: "warning" as const },
+    { label: "Net Profit", value: fmtRupees(netProfit), tone: netProfit >= 0 ? "success" as const : "danger" as const },
+    { label: "Fleet Utilization", value: `${fleetUtilization}%`, tone: "accent" as const },
+    { label: "Trips Completed", value: completedCount.toString(), tone: "success" as const },
+    { label: "Active Trips", value: activeTrips.toString(), tone: "info" as const },
+    { label: "Pending Trips", value: pendingTrips.toString(), tone: "neutral" as const },
+    { label: "Drivers On Duty", value: driversOnDuty.toString(), tone: "neutral" as const }
+  ];
 
-  const maintByVehicle = await prisma.maintenanceLog.groupBy({
-    by: ['vehicleId'],
-    _sum: { cost: true },
-    orderBy: { _sum: { cost: 'desc' } },
-    take: 3
-  });
+  const vehicleStatusBars = [
+    { label: "Available", count: available, pct: totalActive > 0 ? (available / totalActive) * 100 : 0, fill: "bg-[var(--success)]" },
+    { label: "On Trip",   count: onTrip,   pct: totalActive > 0 ? (onTrip / totalActive) * 100 : 0,   fill: "bg-[var(--info)]" },
+    { label: "In Shop",   count: inShop,   pct: totalActive > 0 ? (inShop / totalActive) * 100 : 0,   fill: "bg-[var(--warning)]" },
+    { label: "Retired",   count: retired,  pct: totalVehicles > 0 ? (retired / totalVehicles) * 100 : 0, fill: "bg-[var(--danger)]" }
+  ];
 
-  const topMaintVehicles = await Promise.all(
-    maintByVehicle.map(async (m) => {
-      const v = await prisma.vehicle.findUnique({ where: { id: m.vehicleId } });
-      return { vehicle: v!, totalCost: m._sum.cost || 0 };
-    })
-  );
+  const costBreakdown = [
+    { label: "Fuel",        value: totalFuel,  pct: totalOpCost > 0 ? (totalFuel / totalOpCost) * 100 : 0,  fill: "bg-[var(--accent)]" },
+    { label: "Maintenance", value: totalMaint, pct: totalOpCost > 0 ? (totalMaint / totalOpCost) * 100 : 0, fill: "bg-[var(--warning)]" },
+    { label: "Other",       value: totalOther, pct: totalOpCost > 0 ? (totalOther / totalOpCost) * 100 : 0, fill: "bg-[var(--info)]" }
+  ];
 
   return (
     <AppShell activePath="/">
       <PageHeader
         eyebrow="Dashboard"
         title="Fleet command center"
-        description="A live reference operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
+        description="Live operations overview — revenue, costs, fleet health, and dispatch status all updated in real-time."
       />
 
-      {expiredLicenses > 0 && (
-        <div className="mb-6 rounded-2xl border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] p-4 text-[var(--danger)] animate-fade-up">
-          <strong className="block text-white mb-1">Compliance Alert</strong>
-          {expiredLicenses} driver{expiredLicenses === 1 ? '' : 's'} {expiredLicenses === 1 ? 'has' : 'have'} expired licenses. Dispatch limits automatically enforced.
-        </div>
-      )}
-
-      <DashboardFilters />
-
+      {/* KPI grid */}
       <StatGrid>
-        {dashboardKpis.map((metric) => (
+        {topKpis.map((metric) => (
           <MetricCard key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
         ))}
       </StatGrid>
 
-      <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
-        <Panel title="Recent trips" subtitle="Dispatch activity and completion status">
+      {/* Row 2: Recent trips + vehicle status */}
+      <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr] mb-5">
+        <Panel title="Recent trips" subtitle="Latest dispatch activity and completion status">
           {trips.length === 0 ? (
-            <div className="text-sm text-[var(--muted)] py-4">No trips currently assigned.</div>
+            <div className="text-sm text-[var(--muted)] py-4">No trips yet. <Link href="/trips" className="text-[var(--accent)] hover:underline">Create one →</Link></div>
           ) : (
             <Table
-              columns={["Trip", "Vehicle", "Driver", "Status", "Notes"]}
-              rows={trips.slice(0, 4).map((trip) => [
-                <span key={`tid-${trip.id}`} className="font-mono text-xs">{trip.id.substring(0, 8)}</span>,
-                trip.vehicle.registrationNumber,
-                trip.driver.name,
-                <Pill key={`${trip.id}-status`} tone={toStatusTone(trip.status)}>{trip.status}</Pill>,
-                <span key={`tdst-${trip.id}`} className="truncate max-w-[120px] inline-block" title={`${trip.source} → ${trip.destination}`}>
-                  {trip.source} → {trip.destination}
-                </span>
+              columns={["Route", "Vehicle", "Driver", "Distance", "Status"]}
+              rows={trips.slice(0, 6).map((trip) => [
+                <div key={`r-${trip.id}`}>
+                  <div className="font-medium text-white text-sm">{trip.source} → {trip.destination}</div>
+                  <div className="text-[10px] text-[var(--muted)] font-mono">{trip.id.substring(0, 8)}</div>
+                </div>,
+                <div key={`v-${trip.id}`}>
+                  <div className="text-sm">{trip.vehicle.nameModel}</div>
+                  <div className="text-xs text-[var(--muted)]">{trip.vehicle.registrationNumber}</div>
+                </div>,
+                <span key={`d-${trip.id}`} className="text-sm">{trip.driver.name}</span>,
+                `${trip.plannedDistance} km`,
+                <Pill key={`s-${trip.id}`} tone={toStatusTone(trip.status)}>{trip.status}</Pill>
               ])}
             />
           )}
         </Panel>
 
-        <Panel title="Vehicle status" subtitle="Availability mix across the live fleet">
-          <div className="space-y-4">
+        <Panel title="Vehicle status" subtitle="Availability mix across the fleet">
+          <div className="space-y-4 mb-5">
             {vehicleStatusBars.map((bar) => (
               <div key={bar.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-[color:var(--muted)]">
+                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
                   <span>{bar.label}</span>
-                  <span>{bar.count}</span>
+                  <span className="font-mono">{bar.count}</span>
                 </div>
-                <div className="h-2 rounded-full bg-[var(--panel-strong)]">
-                  <div className={`h-2 rounded-full ${bar.fill}`} style={{ width: bar.width }} />
+                <div className="h-2 rounded-full bg-white/6">
+                  <div className={`h-2 rounded-full ${bar.fill} transition-all`} style={{ width: `${bar.pct}%` }} />
                 </div>
               </div>
             ))}
           </div>
+          <div className="border-t border-white/8 pt-4">
+            <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+              <span>Total Fleet</span>
+              <span className="font-mono font-semibold text-white">{totalVehicles} vehicles</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-[var(--muted)] mt-1">
+              <span>Total Drivers</span>
+              <span className="font-mono font-semibold text-white">{totalDrivers} drivers ({availableDrivers} available)</span>
+            </div>
+            {suspendedDrivers > 0 && (
+              <div className="flex items-center justify-between text-xs mt-1">
+                <span className="text-[var(--danger)]">Suspended Drivers</span>
+                <span className="font-mono font-semibold text-[var(--danger)]">{suspendedDrivers}</span>
+              </div>
+            )}
+          </div>
         </Panel>
       </div>
 
-      <Panel title="Fleet snapshot" subtitle="Vehicles by status">
+      {/* Row 3: Cost breakdown + Maintenance queue */}
+      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.4fr] mb-5">
+        <Panel title="Cost breakdown" subtitle="Operational spend by category">
+          <div className="space-y-4 mb-4">
+            {costBreakdown.map((item) => (
+              <div key={item.label} className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[var(--muted)]">{item.label}</span>
+                  <span className="font-mono text-white">{fmtRupees(item.value)}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-white/6">
+                  <div className={`h-1.5 rounded-full ${item.fill}`} style={{ width: `${item.pct.toFixed(1)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-white/8 pt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[var(--muted)]">Total Cost</span>
+              <span className="font-mono text-[var(--warning)] font-semibold">{fmtRupees(totalOpCost)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[var(--muted)]">Total Revenue</span>
+              <span className="font-mono text-[var(--success)] font-semibold">{fmtRupees(totalRevenue)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm border-t border-white/8 pt-2">
+              <span className="font-semibold text-white">Net Profit</span>
+              <span className={`font-mono font-bold ${netProfit >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+                {fmtRupees(netProfit)}
+              </span>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="Maintenance queue" subtitle="Active service records that keep vehicles in shop">
+          {maintenanceQueue.length === 0 ? (
+            <div className="text-sm text-[var(--muted)] py-4">✅ No active maintenance logs — all vehicles are clear.</div>
+          ) : (
+            <Table
+              columns={["Vehicle", "Service", "Date", "Cost", "State"]}
+              rows={maintenanceQueue.map((record) => [
+                <div key={`mv-${record.id}`}>
+                  <div className="font-semibold text-white text-sm">{record.vehicle.nameModel}</div>
+                  <div className="text-xs text-[var(--muted)]">{record.vehicle.registrationNumber}</div>
+                </div>,
+                record.description,
+                new Date(record.date).toLocaleDateString("en-IN"),
+                fmtRupees(record.cost),
+                <Pill key={`ms-${record.id}`} tone="warning">Active</Pill>
+              ])}
+            />
+          )}
+        </Panel>
+      </div>
+
+      {/* Row 4: Fleet snapshot */}
+      <Panel title="Fleet snapshot" subtitle="All vehicles with current status">
         {vehicles.length === 0 ? (
-          <div className="text-sm text-[var(--muted)] py-4">No vehicles documented in fleet.</div>
+          <div className="text-sm text-[var(--muted)] py-4">No vehicles. <Link href="/fleet" className="text-[var(--accent)] hover:underline">Register one →</Link></div>
         ) : (
           <Table
-            columns={["Reg no.", "Vehicle", "Type", "Capacity", "Status"]}
-            rows={vehicles.slice(0, 6).map((vehicle) => [
-              vehicle.registrationNumber,
-              vehicle.nameModel,
+            columns={["Reg No.", "Vehicle", "Type", "Capacity", "Odometer", "Status"]}
+            rows={vehicles.map((vehicle) => [
+              <span key={`r-${vehicle.id}`} className="font-mono text-xs text-[var(--muted)]">{vehicle.registrationNumber}</span>,
+              <span key={`n-${vehicle.id}`} className="font-medium text-white">{vehicle.nameModel}</span>,
               vehicle.type,
               `${vehicle.maxLoadCapacity} kg`,
-              <Pill key={`${vehicle.id}-pill`} tone={toStatusTone(vehicle.status)}>{vehicle.status.replace("_", " ")}</Pill>
-            ])}
-          />
-        )}
-      </Panel>
-
-      <Panel title="Maintenance queue" subtitle="Active service records that keep vehicles in shop">
-        {maintenanceQueue.length === 0 ? (
-          <div className="text-sm text-[var(--muted)] py-4">No active maintenance logs.</div>
-        ) : (
-          <Table
-            columns={["Vehicle", "Service", "Date", "Cost", "State"]}
-            rows={maintenanceQueue.map((record) => [
-              record.vehicle.registrationNumber,
-              record.description,
-              new Date(record.date).toLocaleDateString(),
-              formatCurrency(record.cost),
-              <Pill key={`${record.id}-maint`} tone="warning">Active</Pill>
-            ])}
-          />
-        )}
-      </Panel>
-
-      <Panel title="Highest Maintenance Assets" subtitle="Analytics on which vehicles cost the most to maintain globally">
-        {topMaintVehicles.length === 0 ? (
-          <div className="text-sm text-[var(--muted)] py-4">No maintenance data available.</div>
-        ) : (
-          <Table
-            columns={["Vehicle", "Registration", "Total Maint. Cost"]}
-            rows={topMaintVehicles.map(m => [
-              m.vehicle.nameModel,
-              m.vehicle.registrationNumber,
-              <span key={`cost-${m.vehicle.id}`} className="font-mono text-[var(--danger)]">
-                {formatCurrency(m.totalCost)}
-              </span>
+              `${vehicle.odometer.toLocaleString("en-IN")} km`,
+              <Pill key={`p-${vehicle.id}`} tone={toStatusTone(vehicle.status)}>{vehicle.status.replace("_", " ")}</Pill>
             ])}
           />
         )}

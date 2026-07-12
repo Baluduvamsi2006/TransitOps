@@ -1,5 +1,6 @@
 import { AppShell } from "../../components/transit-shell";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
+import { SubmitButton } from "../../components/submit-button";
 import { prisma } from "../../lib/prisma";
 import { createMaintenanceLog, closeMaintenanceLog } from "./actions";
 
@@ -96,12 +97,10 @@ export default async function MaintenancePage() {
               </label>
 
               <div className="md:col-span-2 pt-2">
-                <button
-                  type="submit"
+                <SubmitButton
+                  label="Save Log"
                   className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
-                >
-                  Save Log
-                </button>
+                />
               </div>
             </form>
           ) : (
@@ -147,12 +146,10 @@ export default async function MaintenancePage() {
                 {record.isOpen ? (
                   <form action={closeMaintenanceLog}>
                     <input type="hidden" name="id" value={record.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      label="Close Service"
                       className="rounded-full border border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--success)] hover:bg-[color:rgba(92,191,118,0.18)] transition"
-                    >
-                      Close Service
-                    </button>
+                    />
                   </form>
                 ) : (
                   <span className="text-xs text-[var(--muted)] italic">Archived</span>

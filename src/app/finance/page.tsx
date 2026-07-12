@@ -1,5 +1,6 @@
 import { AppShell } from "../../components/transit-shell";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
+import { SubmitButton } from "../../components/submit-button";
 import { prisma } from "../../lib/prisma";
 import { createFuelLog, deleteFuelLog, createExpense, deleteExpense } from "./actions";
 import { FinanceFilters } from "./finance-filters";
@@ -175,12 +176,10 @@ export default async function FinancePage(props: FinancePageProps) {
                 </div>
 
                 <div className="flex items-end md:col-span-1">
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Log Fuel"
                     className="w-full rounded-2xl bg-[var(--accent)] py-2.5 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
-                  >
-                    Log Fuel
-                  </button>
+                  />
                 </div>
               </form>
             </div>
@@ -238,12 +237,10 @@ export default async function FinancePage(props: FinancePageProps) {
                 </div>
 
                 <div className="flex items-end md:col-span-1">
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Log Expense"
                     className="w-full rounded-2xl bg-[var(--info)] py-2.5 text-sm font-semibold text-white hover:brightness-110 transition"
-                  >
-                    Log Expense
-                  </button>
+                  />
                 </div>
               </form>
             </div>
@@ -283,12 +280,10 @@ export default async function FinancePage(props: FinancePageProps) {
                 `₹${row.cost.toLocaleString()}`,
                 <form key={`${row.id}-action`} action={deleteFuelLog}>
                   <input type="hidden" name="id" value={row.id} />
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Delete"
                     className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[color:rgba(217,80,63,0.18)]"
-                  >
-                    Delete
-                  </button>
+                  />
                 </form>
               ])}
             />
@@ -311,12 +306,10 @@ export default async function FinancePage(props: FinancePageProps) {
                 formatDate(row.date),
                 <form key={`${row.id}-action`} action={deleteExpense}>
                   <input type="hidden" name="id" value={row.id} />
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Delete"
                     className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[color:rgba(217,80,63,0.18)]"
-                  >
-                    Delete
-                  </button>
+                  />
                 </form>
               ])}
             />

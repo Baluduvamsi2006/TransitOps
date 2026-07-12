@@ -108,7 +108,7 @@ export async function createDriver(formData: FormData) {
     redirectTo(buildRedirectPath(returnTo, "error", "Unable to create the driver right now."));
   }
 
-  revalidatePath(DRIVER_PATH);
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(returnTo, "message", "Driver created."));
 }
 
@@ -142,7 +142,7 @@ export async function updateDriver(formData: FormData) {
     redirectTo(buildRedirectPath(DRIVER_PATH, "error", "Unable to update the driver right now."));
   }
 
-  revalidatePath(DRIVER_PATH);
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(DRIVER_PATH, "message", "Driver updated."));
 }
 
@@ -166,6 +166,6 @@ export async function deleteDriver(formData: FormData) {
     redirectTo(buildRedirectPath(returnTo, "error", "Unable to delete the driver right now."));
   }
 
-  revalidatePath(DRIVER_PATH);
+  revalidatePath("/", "layout");
   redirectTo(buildRedirectPath(returnTo, "message", "Driver deleted."));
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "../../components/transit-shell";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
+import { SubmitButton } from "../../components/submit-button";
 import { prisma } from "../../lib/prisma";
 import { createTrip, dispatchTrip, completeTrip, cancelTrip, deleteTrip } from "./actions";
 import { TripStatus } from "@prisma/client";
@@ -179,12 +180,10 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Complete Trip"
                     className="rounded-2xl bg-[var(--success)] px-5 py-3 text-sm font-semibold text-white hover:brightness-110 transition"
-                  >
-                    Complete Trip
-                  </button>
+                  />
                   <Link
                     href="/trips"
                     className="rounded-2xl border border-white/8 bg-white/6 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
@@ -278,12 +277,10 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
 
 
                 <div className="md:col-span-2 pt-2">
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Draft Trip"
                     className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
-                  >
-                    Draft Trip
-                  </button>
+                  />
                 </div>
               </form>
             </Panel>
@@ -338,21 +335,17 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <>
                   <form action={dispatchTrip}>
                     <input type="hidden" name="id" value={trip.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      label="Dispatch"
                       className="rounded-full border border-[color:rgba(79,143,209,0.35)] bg-[color:rgba(79,143,209,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--info)] hover:bg-[color:rgba(79,143,209,0.18)] transition"
-                    >
-                      Dispatch
-                    </button>
+                    />
                   </form>
                   <form action={cancelTrip}>
                     <input type="hidden" name="id" value={trip.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      label="Cancel"
                       className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] hover:bg-[color:rgba(217,80,63,0.18)] transition"
-                    >
-                      Cancel
-                    </button>
+                    />
                   </form>
                 </>
               )}
@@ -366,24 +359,20 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                   </Link>
                   <form action={cancelTrip}>
                     <input type="hidden" name="id" value={trip.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      label="Cancel"
                       className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] hover:bg-[color:rgba(217,80,63,0.18)] transition"
-                    >
-                      Cancel
-                    </button>
+                    />
                   </form>
                 </>
               )}
               {canManage && (trip.status === TripStatus.COMPLETED || trip.status === TripStatus.CANCELLED) && (
                 <form action={deleteTrip}>
                   <input type="hidden" name="id" value={trip.id} />
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    label="Delete"
                     className="rounded-full border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-semibold text-[var(--muted)] hover:bg-white/10 transition"
-                  >
-                    Delete
-                  </button>
+                  />
                 </form>
               )}
               {!canManage && (
