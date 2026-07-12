@@ -4,13 +4,25 @@ import { redirect } from "next/navigation";
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
 import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
-import {
-  dashboardKpis,
-  maintenanceRows,
-  recentTrips,
-  vehicleRows,
-  vehicleStatusBars
-} from "../lib/transitops-data";
+import { prisma } from "../lib/prisma";
+import { TripStatus, VehicleStatus } from "@prisma/client";
+
+function toStatusTone(status: string) {
+  return (
+    {
+      AVAILABLE: "success",
+      ON_TRIP: "info",
+      IN_SHOP: "warning",
+      RETIRED: "danger",
+      DRAFT: "muted",
+      DISPATCHED: "info",
+      COMPLETED: "success",
+      CANCELLED: "danger"
+    }[status] || "muted"
+  ) as "success" | "info" | "warning" | "danger" | "muted";
+}
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -20,12 +32,67 @@ export default async function Home() {
     redirect("/login");
   }
 
+  // 1. Vehicles
+  const vehicles = await prisma.vehicle.findMany();
+  const totalActive = vehicles.filter((v) => v.status !== "RETIRED").length;
+  const available = vehicles.filter((v) => v.status === "AVAILABLE").length;
+  const inShop = vehicles.filter((v) => v.status === "IN_SHOP").length;
+  const onTrip = vehicles.filter((v) => v.status === "ON_TRIP").length;
+  const retired = vehicles.filter((v) => v.status === "RETIRED").length;
+
+  const fleetUtilization = totalActive > 0 ? ((onTrip / totalActive) * 100).toFixed(0) : "0";
+
+  // 2. Trips
+  const trips = await prisma.trip.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { vehicle: true, driver: true }
+  });
+  const activeTrips = trips.filter((t) => t.status === "DISPATCHED").length;
+  const pendingTrips = trips.filter((t) => t.status === "DRAFT").length;
+
+  // 3. Drivers
+  const driversOnDuty = await prisma.driver.count({ where: { status: "ON_TRIP" } });
+
+  // 4. Financials (Operational Cost)
+  const fuelAgg = await prisma.fuelLog.aggregate({ _sum: { cost: true } });
+  const maintAgg = await prisma.maintenanceLog.aggregate({ _sum: { cost: true } });
+  const expAgg = await prisma.expense.aggregate({ _sum: { amount: true } });
+  const totalCost = (fuelAgg._sum.cost || 0) + (maintAgg._sum.cost || 0) + (expAgg._sum.amount || 0);
+
+  const formatCurrency = (num: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+  };
+
+  const dashboardKpis = [
+    { label: "Active Vehicles", value: totalActive.toString(), tone: "accent" as const },
+    { label: "Available Vehicles", value: available.toString(), tone: "success" as const },
+    { label: "In Maintenance", value: inShop.toString(), tone: "warning" as const },
+    { label: "Active Trips", value: activeTrips.toString(), tone: "info" as const },
+    { label: "Pending Trips", value: pendingTrips.toString(), tone: "neutral" as const },
+    { label: "Drivers On Duty", value: driversOnDuty.toString(), tone: "neutral" as const },
+    { label: "Fleet Utilization", value: `${fleetUtilization}%`, tone: "accent" as const },
+    { label: "Operational Cost", value: formatCurrency(totalCost), tone: "warning" as const }
+  ];
+
+  const vehicleStatusBars = [
+    { label: "Available", count: available, width: totalActive ? `${(available / totalActive) * 100}%` : "0%", fill: "bg-[var(--success)]" },
+    { label: "On Trip", count: onTrip, width: totalActive ? `${(onTrip / totalActive) * 100}%` : "0%", fill: "bg-[var(--info)]" },
+    { label: "In Shop", count: inShop, width: totalActive ? `${(inShop / totalActive) * 100}%` : "0%", fill: "bg-[var(--warning)]" },
+    { label: "Retired", count: retired, width: vehicles.length ? `${(retired / vehicles.length) * 100}%` : "0%", fill: "bg-[var(--danger)]" }
+  ];
+
+  const maintenanceQueue = await prisma.maintenanceLog.findMany({
+    where: { isOpen: true },
+    include: { vehicle: true },
+    orderBy: { createdAt: "desc" }
+  });
+
   return (
     <AppShell activePath="/">
       <PageHeader
         eyebrow="Dashboard"
         title="Fleet command center"
-        description="A reference-first operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
+        description="A live reference operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
       />
 
       <StatGrid>
@@ -36,23 +103,29 @@ export default async function Home() {
 
       <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
         <Panel title="Recent trips" subtitle="Dispatch activity and completion status">
-          <Table
-            columns={["Trip", "Vehicle", "Driver", "Status", "Notes"]}
-            rows={recentTrips.map((trip) => [
-              trip.code,
-              trip.vehicle,
-              trip.driver,
-              <Pill key={`${trip.code}-status`} tone={trip.tone}>{trip.status}</Pill>,
-              trip.notes
-            ])}
-          />
+          {trips.length === 0 ? (
+            <div className="text-sm text-[var(--muted)] py-4">No trips currently assigned.</div>
+          ) : (
+            <Table
+              columns={["Trip", "Vehicle", "Driver", "Status", "Notes"]}
+              rows={trips.slice(0, 4).map((trip) => [
+                <span key={`tid-${trip.id}`} className="font-mono text-xs">{trip.id.substring(0, 8)}</span>,
+                trip.vehicle.registrationNumber,
+                trip.driver.name,
+                <Pill key={`${trip.id}-status`} tone={toStatusTone(trip.status)}>{trip.status}</Pill>,
+                <span key={`tdst-${trip.id}`} className="truncate max-w-[120px] inline-block" title={`${trip.source} → ${trip.destination}`}>
+                  {trip.source} → {trip.destination}
+                </span>
+              ])}
+            />
+          )}
         </Panel>
 
         <Panel title="Vehicle status" subtitle="Availability mix across the live fleet">
           <div className="space-y-4">
             {vehicleStatusBars.map((bar) => (
               <div key={bar.label} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-(--muted)">
+                <div className="flex items-center justify-between text-sm text-[color:var(--muted)]">
                   <span>{bar.label}</span>
                   <span>{bar.count}</span>
                 </div>
@@ -65,30 +138,38 @@ export default async function Home() {
         </Panel>
       </div>
 
-      <Panel title="Fleet snapshot" subtitle="High-value vehicles and compliance flags">
-        <Table
-          columns={["Reg no.", "Vehicle", "Type", "Capacity", "Status"]}
-          rows={vehicleRows.slice(0, 6).map((vehicle) => [
-            vehicle.reg,
-            vehicle.name,
-            vehicle.type,
-            `${vehicle.capacity} kg`,
-            <Pill key={`${vehicle.reg}-pill`} tone={vehicle.tone}>{vehicle.status}</Pill>
-          ])}
-        />
+      <Panel title="Fleet snapshot" subtitle="Vehicles by status">
+        {vehicles.length === 0 ? (
+          <div className="text-sm text-[var(--muted)] py-4">No vehicles documented in fleet.</div>
+        ) : (
+          <Table
+            columns={["Reg no.", "Vehicle", "Type", "Capacity", "Status"]}
+            rows={vehicles.slice(0, 6).map((vehicle) => [
+              vehicle.registrationNumber,
+              vehicle.nameModel,
+              vehicle.type,
+              `${vehicle.maxLoadCapacity} kg`,
+              <Pill key={`${vehicle.id}-pill`} tone={toStatusTone(vehicle.status)}>{vehicle.status.replace("_", " ")}</Pill>
+            ])}
+          />
+        )}
       </Panel>
 
       <Panel title="Maintenance queue" subtitle="Active service records that keep vehicles in shop">
-        <Table
-          columns={["Vehicle", "Service", "Date", "Cost", "State"]}
-          rows={maintenanceRows.map((record) => [
-            record.vehicle,
-            record.service,
-            record.date,
-            record.cost,
-            <Pill key={`${record.vehicle}-maint`} tone={record.tone}>{record.state}</Pill>
-          ])}
-        />
+        {maintenanceQueue.length === 0 ? (
+          <div className="text-sm text-[var(--muted)] py-4">No active maintenance logs.</div>
+        ) : (
+          <Table
+            columns={["Vehicle", "Service", "Date", "Cost", "State"]}
+            rows={maintenanceQueue.map((record) => [
+              record.vehicle.registrationNumber,
+              record.description,
+              new Date(record.date).toLocaleDateString(),
+              formatCurrency(record.cost),
+              <Pill key={`${record.id}-maint`} tone="warning">Active</Pill>
+            ])}
+          />
+        )}
       </Panel>
     </AppShell>
   );
