@@ -55,21 +55,6 @@ export function DashboardFilters() {
                     </select>
                 </label>
 
-                <label className="flex flex-col gap-2">
-                    <span className="text-xs text-[var(--muted-2)]">Region</span>
-                    <select
-                        className="rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)] transition"
-                        value={searchParams.get("region") || "All"}
-                        onChange={(e) => router.push(`/?${createQueryString("region", e.target.value)}`)}
-                        style={{ colorScheme: "dark" }}
-                    >
-                        <option value="All">All</option>
-                        <option value="North">North</option>
-                        <option value="South">South</option>
-                        <option value="East">East</option>
-                        <option value="West">West</option>
-                    </select>
-                </label>
             </div>
         </div>
     );
