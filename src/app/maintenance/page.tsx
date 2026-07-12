@@ -55,19 +55,21 @@ export default async function MaintenancePage() {
             <form action={createMaintenanceLog} className="grid gap-4 md:grid-cols-2">
               <label className="block space-y-2 md:col-span-2">
                 <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Vehicle</span>
-                <select
-                  name="vehicleId"
+                <input
+                  list="available-vehicles"
+                  name="vehicleExt"
                   required
-                  style={{ colorScheme: "dark" }}
+                  placeholder="Search available or in-shop vehicles..."
+                  autoComplete="off"
                   className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)] transition"
-                >
-                  <option value="">Select vehicle...</option>
+                />
+                <datalist id="available-vehicles">
                   {availableVehicles.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.nameModel} ({v.registrationNumber}) - {v.status.replace("_", " ")}
+                    <option key={v.id} value={`${v.nameModel} (${v.registrationNumber}) [${v.id}]`}>
+                      {v.status.replace("_", " ")}
                     </option>
                   ))}
-                </select>
+                </datalist>
               </label>
 
               <label className="block space-y-2 md:col-span-1">

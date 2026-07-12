@@ -4,12 +4,15 @@ import { prisma } from "../../lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function createMaintenanceLog(formData: FormData) {
-    const vehicleId = formData.get("vehicleId") as string;
+    const vehicleExt = formData.get("vehicleExt") as string;
     const description = formData.get("description") as string;
     const cost = parseFloat((formData.get("cost") as string) || "0");
 
+    const match = vehicleExt ? vehicleExt.match(/\[(.*?)\]$/) : null;
+    const vehicleId = match ? match[1] : null;
+
     if (!vehicleId || !description) {
-        throw new Error("Vehicle and service type are required.");
+        throw new Error("Vehicle and service type are required. Please select from the dropdown options.");
     }
 
     // Create log and update vehicle status in a transaction
