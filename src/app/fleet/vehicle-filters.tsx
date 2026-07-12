@@ -1,10 +1,11 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
 
 export function VehicleFilters() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
@@ -13,16 +14,20 @@ export function VehicleFilters() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
+      const currentSearch = params.get("search") || "";
+      if (searchQuery === currentSearch) return; // Prevent infinite loop
+
       if (searchQuery) {
         params.set("search", searchQuery);
       } else {
         params.delete("search");
       }
-      router.push(`?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}` as any);
+      router.refresh();
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, router, searchParams]);
+  }, [searchQuery, router, searchParams, pathname]);
 
   const updateFilter = useCallback(
     (name: string, value: string) => {
@@ -32,9 +37,10 @@ export function VehicleFilters() {
       } else {
         params.delete(name);
       }
-      router.push(`?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}` as any);
+      router.refresh();
     },
-    [searchParams, router]
+    [searchParams, router, pathname]
   );
 
   return (

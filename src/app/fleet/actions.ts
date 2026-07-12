@@ -36,3 +36,16 @@ export async function addVehicle(formData: FormData) {
     return { success: false, error: "Failed to add vehicle. Please try again." };
   }
 }
+
+export async function updateVehicleStatus(id: string, status: string) {
+  try {
+    await prisma.vehicle.update({
+      where: { id },
+      data: { status: status as any },
+    });
+    revalidatePath("/fleet");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update status." };
+  }
+}

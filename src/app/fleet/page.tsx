@@ -2,6 +2,10 @@ import { AppShell } from "../../components/transit-shell";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
 import { prisma } from "../../lib/prisma";
 import { AddVehicleButton } from "./add-vehicle-button";
+import { VehicleFilters } from "./vehicle-filters";
+import { StatusUpdater } from "./status-updater";
+
+export const dynamic = "force-dynamic";
 
 function getStatusTone(status: string) {
   switch (status) {
@@ -13,10 +17,23 @@ function getStatusTone(status: string) {
   }
 }
 
-export default async function FleetPage() {
+export default async function FleetPage(props: { searchParams?: Promise<{ search?: string; type?: string; status?: string }> }) {
+  const searchParams = props.searchParams ? await props.searchParams : {};
   const vehicles = await prisma.vehicle.findMany({
     orderBy: { createdAt: "desc" }
   });
+
+  let filteredVehicles = vehicles;
+  if (searchParams?.search) {
+    const s = searchParams.search.toLowerCase();
+    filteredVehicles = filteredVehicles.filter(v => v.registrationNumber.toLowerCase().includes(s) || v.nameModel.toLowerCase().includes(s));
+  }
+  if (searchParams?.type && searchParams.type !== "All") {
+    filteredVehicles = filteredVehicles.filter(v => v.type.trim().toLowerCase() === String(searchParams.type).trim().toLowerCase());
+  }
+  if (searchParams?.status && searchParams.status !== "All") {
+    filteredVehicles = filteredVehicles.filter(v => v.status.trim().toLowerCase() === String(searchParams.status).trim().toLowerCase());
+  }
 
   const totalCount = vehicles.length;
   const availableCount = vehicles.filter(v => v.status === "AVAILABLE").length;
@@ -57,24 +74,20 @@ export default async function FleetPage() {
         ))}
       </StatGrid>
 
-      <div className="grid gap-5 xl:grid-cols-[1.3fr_0.9fr]">
+      <div className="grid items-start gap-5 xl:grid-cols-[1.3fr_0.9fr]">
         <Panel title="Vehicle list" subtitle="Search, filter, and inspect the live fleet inventory.">
-          <div className="mb-4 flex flex-wrap gap-3">
-            <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">Search reg / model</div>
-            <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">Type: All</div>
-            <div className="rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-(--muted)">Status: All</div>
-          </div>
+          <VehicleFilters />
 
           <Table
             columns={["Reg no.", "Vehicle", "Type", "Capacity", "Odometer", "Cost", "Status"]}
-            rows={vehicles.map((vehicle) => [
+            rows={filteredVehicles.map((vehicle) => [
               vehicle.registrationNumber,
               vehicle.nameModel,
               vehicle.type,
               `${vehicle.maxLoadCapacity} kg`,
               `${vehicle.odometer} km`,
               `₹${vehicle.acquisitionCost.toLocaleString()}`,
-              <Pill key={`${vehicle.id}-status`} tone={getStatusTone(vehicle.status)}>{vehicle.status.replace("_", " ")}</Pill>
+              <StatusUpdater key={`${vehicle.id}-status`} vehicleId={vehicle.id} initialStatus={vehicle.status} />
             ])}
           />
         </Panel>
@@ -94,9 +107,6 @@ export default async function FleetPage() {
             ))}
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/8 bg-white/6 p-4 text-sm leading-7 text-(--muted-2)">
-            Retired and in-shop vehicles are displayed here for lifecycle visibility but are excluded from dispatch selection in the next phase.
-          </div>
         </Panel>
       </div>
     </AppShell>
