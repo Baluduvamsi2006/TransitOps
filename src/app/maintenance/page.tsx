@@ -40,8 +40,7 @@ export default async function MaintenancePage() {
     <AppShell activePath="/maintenance">
       <PageHeader
         eyebrow="Maintenance"
-        title="Service workflow and in-shop tracking"
-        description="A maintenance workspace that mirrors the reference flow: open service records move vehicles to In Shop until they are closed, removing them from the driver dispatch pool."
+        title="Service Logs"
       />
 
       <StatGrid>

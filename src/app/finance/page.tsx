@@ -101,9 +101,8 @@ export default async function FinancePage(props: FinancePageProps) {
   return (
     <AppShell activePath="/finance" user={null}>
       <PageHeader
-        eyebrow="Fuel & Expenses"
-        title="Cost logging and operational spend"
-        description="A finance workspace for fuel logs, tolls, maintenance expenses, and the total cost view used by analytics."
+        eyebrow="Financials"
+        title="Fuel & Expenses"
       />
 
       <StatGrid>

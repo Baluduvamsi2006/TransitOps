@@ -9,11 +9,11 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("Deleting existing records...");
-  await prisma.trip.deleteMany();
-  await prisma.maintenanceLog.deleteMany();
-  await prisma.fuelLog.deleteMany();
+  console.log("Deleting existing records (except users)...");
   await prisma.expense.deleteMany();
+  await prisma.fuelLog.deleteMany();
+  await prisma.maintenanceLog.deleteMany();
+  await prisma.trip.deleteMany();
   await prisma.vehicle.deleteMany();
   await prisma.driver.deleteMany();
 
@@ -92,14 +92,9 @@ async function main() {
     }
   ];
 
-  console.log("Seeding database with Indian vehicles...");
-  
+  console.log("Seeding Vehicles...");
   for (const v of indianVehicles) {
-    await prisma.vehicle.upsert({
-      where: { registrationNumber: v.registrationNumber },
-      update: {},
-      create: v,
-    });
+    await prisma.vehicle.create({ data: v });
   }
 
   const indianDrivers: Prisma.DriverCreateInput[] = [
@@ -150,16 +145,111 @@ async function main() {
     },
   ];
 
-  console.log("Seeding database with Indian drivers...");
+  console.log("Seeding Drivers...");
   for (const d of indianDrivers) {
-    await prisma.driver.upsert({
-      where: { licenseNumber: d.licenseNumber },
-      update: {},
-      create: d,
+    await prisma.driver.create({ data: d });
+  }
+
+  const vehicles = await prisma.vehicle.findMany();
+  const drivers = await prisma.driver.findMany();
+
+  const vAvailable = vehicles.filter(v => v.status === "AVAILABLE");
+  const vOnTrip = vehicles.filter(v => v.status === "ON_TRIP");
+  const dAvailable = drivers.filter(d => d.status === "AVAILABLE");
+  const dOnTrip = drivers.filter(d => d.status === "ON_TRIP");
+
+  console.log("Seeding Trips...");
+  const now = new Date();
+  
+  // Create 10 completed trips spread over last 6 months
+  for(let i=0; i<10; i++) {
+    const v = vehicles[i % vehicles.length];
+    const d = drivers[i % drivers.length];
+    const pastDate = new Date(now.getTime() - (Math.random() * 150 * 24 * 60 * 60 * 1000));
+    const completedDate = new Date(pastDate.getTime() + (Math.random() * 2 * 24 * 60 * 60 * 1000));
+    const distance = 150 + Math.floor(Math.random() * 400);
+
+    await prisma.trip.create({
+      data: {
+        source: ["Mumbai", "Delhi", "Pune", "Bangalore", "Chennai"][i % 5],
+        destination: ["Ahmedabad", "Surat", "Jaipur", "Hyderabad", "Kolkata"][(i+1) % 5],
+        cargoWeight: Math.floor(v.maxLoadCapacity * 0.8),
+        plannedDistance: distance,
+        status: "COMPLETED",
+        vehicleId: v.id,
+        driverId: d.id,
+        createdAt: pastDate,
+        dispatchedAt: pastDate,
+        completedAt: completedDate,
+      }
+    });
+
+    // Add Fuel and Maintenance for this vehicle occasionally
+    await prisma.fuelLog.create({
+      data: {
+        liters: distance / 10,
+        cost: (distance / 10) * 95, // 95 rupees per liter
+        date: completedDate,
+        vehicleId: v.id
+      }
+    });
+
+    if (i % 3 === 0) {
+        await prisma.maintenanceLog.create({
+            data: {
+                description: "Standard Servicing & Oil Change",
+                cost: 2500 + Math.random() * 3000,
+                isOpen: false,
+                date: pastDate,
+                vehicleId: v.id,
+            }
+        });
+    }
+
+    if (i % 2 === 0) {
+        await prisma.expense.create({
+            data: {
+                description: "Toll Tax & Parking",
+                amount: 300 + Math.random() * 500,
+                date: completedDate,
+                vehicleId: v.id
+            }
+        });
+    }
+  }
+
+  // Create Active Trips (Dispatched)
+  if (vOnTrip.length > 0 && dOnTrip.length > 0) {
+      await prisma.trip.create({
+        data: {
+            source: "Mumbai",
+            destination: "Pune",
+            cargoWeight: 1000,
+            plannedDistance: 160,
+            status: "DISPATCHED",
+            vehicleId: vOnTrip[0].id,
+            driverId: dOnTrip[0].id,
+            dispatchedAt: new Date(),
+        }
+      });
+  }
+
+  // Create Draft Trip
+  if (vAvailable.length > 0 && dAvailable.length > 0) {
+    await prisma.trip.create({
+        data: {
+            source: "Delhi",
+            destination: "Agra",
+            cargoWeight: 400,
+            plannedDistance: 240,
+            status: "DRAFT",
+            vehicleId: vAvailable[0].id,
+            driverId: dAvailable[0].id,
+        }
     });
   }
 
-  console.log("Seeding finished.");
+  console.log("Seeding finished successfully!");
 }
 
 main()

@@ -1,3 +1,5 @@
+import { ExportPdfButton } from "./export-pdf-button";
+
 type MetricCardProps = {
   label: string;
   value: string | number;
@@ -44,14 +46,21 @@ type PageHeaderProps = {
   eyebrow: string;
   title: string;
   description?: string;
+  actions?: React.ReactNode;
 };
 
-export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, description, actions }: PageHeaderProps) {
   return (
-    <div className="animate-fade-up mb-6 space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.32em] text-(--accent)">{eyebrow}</p>
-      <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
-      {description ? <p className="max-w-3xl text-sm leading-7 text-(--muted-2) sm:text-base">{description}</p> : null}
+    <div className="animate-fade-up mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-(--accent)">{eyebrow}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
+        {description ? <p className="max-w-3xl text-sm leading-7 text-(--muted-2) sm:text-base">{description}</p> : null}
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <ExportPdfButton />
+        {actions}
+      </div>
     </div>
   );
 }

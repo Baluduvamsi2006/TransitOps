@@ -323,9 +323,8 @@ export default async function ReportsPage(props: ReportsPageProps) {
   return (
     <AppShell activePath="/reports" user={null}>
       <PageHeader
-        eyebrow="Reports & Analytics"
-        title="Operational cost, fuel efficiency, and ROI"
-        description="Full fleet analytics: revenue trends, cost breakdowns, vehicle ROI, and driver performance — all calculated live from the database."
+        eyebrow="Analytics"
+        title="Reports & Insights"
       />
 
       <StatGrid>

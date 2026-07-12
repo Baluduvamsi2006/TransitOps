@@ -113,9 +113,8 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
   return (
     <AppShell activePath="/trips">
       <PageHeader
-        eyebrow="Trip Management"
-        title="Dispatch, complete, and cancel trips"
-        description="A route control surface for drafting shipments, assigning available resources, and reviewing live trip state."
+        eyebrow="Dispatch & Routing"
+        title="Active Trips"
       />
 
       <StatGrid>

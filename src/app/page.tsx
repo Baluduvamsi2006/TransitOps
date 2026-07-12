@@ -119,8 +119,7 @@ export default async function Home() {
     <AppShell activePath="/">
       <PageHeader
         eyebrow="Dashboard"
-        title="Fleet command center"
-        description="Live operations overview — revenue, costs, fleet health, and dispatch status all updated in real-time."
+        title="Command Center"
       />
 
       {/* KPI grid */}

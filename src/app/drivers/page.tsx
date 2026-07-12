@@ -89,8 +89,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     <AppShell activePath="/drivers" user={null}>
       <PageHeader
         eyebrow="Driver Management"
-        title="Driver records and compliance"
-        description="Keep driver details, license status, and dispatch readiness in one clean workspace."
+        title="Active Roster"
       />
 
       <StatGrid>
