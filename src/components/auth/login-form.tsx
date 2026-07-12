@@ -8,6 +8,59 @@ import { roleLabels } from "../../lib/rbac";
 
 const loginRoles = ["FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"] as const;
 
+const DEMO_EMAIL = "superadmin@transitops.in";
+const DEMO_PASSWORD = "SuperAdmin@12345";
+
+function CopyButton({ value, label }: { value: string; label: string }) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // fallback
+            const el = document.createElement("textarea");
+            el.value = value;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handleCopy}
+            title={`Copy ${label}`}
+            className="ml-2 flex-shrink-0 rounded-lg border border-white/10 bg-white/6 px-2 py-1 text-xs text-(--muted) transition hover:border-white/25 hover:bg-white/12 hover:text-white active:scale-95"
+        >
+            {copied ? (
+                <span className="flex items-center gap-1">
+                    {/* check icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-green-400">Copied</span>
+                </span>
+            ) : (
+                <span className="flex items-center gap-1">
+                    {/* copy icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                    </svg>
+                    Copy
+                </span>
+            )}
+        </button>
+    );
+}
+
 export function LoginForm() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -16,6 +69,11 @@ export function LoginForm() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState<(typeof loginRoles)[number]>(loginRoles[1] ?? loginRoles[0]);
+
+    const fillDemo = () => {
+        setEmail(DEMO_EMAIL);
+        setPassword(DEMO_PASSWORD);
+    };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -57,7 +115,52 @@ export function LoginForm() {
                 <p className="text-sm leading-6 text-(--muted-2)">Pick the DB-assigned role, then sign in with email and password.</p>
             </div>
 
-            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+            {/* ── Demo credentials panel ── */}
+            <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/8 px-4 py-4">
+                <div className="mb-3 flex items-center gap-2">
+                    {/* star / judge icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-amber-400">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">Hackathon Demo Credentials</p>
+                </div>
+
+                {/* email row */}
+                <div className="mb-2">
+                    <span className="text-[10px] uppercase tracking-widest text-amber-400/70">Email</span>
+                    <div className="mt-1 flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2">
+                        <code className="select-all text-xs text-white">{DEMO_EMAIL}</code>
+                        <CopyButton value={DEMO_EMAIL} label="email" />
+                    </div>
+                </div>
+
+                {/* password row */}
+                <div className="mb-3">
+                    <span className="text-[10px] uppercase tracking-widest text-amber-400/70">Password</span>
+                    <div className="mt-1 flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2">
+                        <code className="select-all text-xs text-white">{DEMO_PASSWORD}</code>
+                        <CopyButton value={DEMO_PASSWORD} label="password" />
+                    </div>
+                </div>
+
+                {/* note */}
+                <p className="text-[11px] leading-5 text-amber-300/80">
+                    <span className="font-bold text-amber-300">* Super Admin</span> — can log in with{" "}
+                    <span className="font-semibold text-white">any of the 4 roles</span>:{" "}
+                    Fleet Manager, Dispatcher, Safety Officer, Financial Analyst.
+                </p>
+
+                {/* quick-fill button */}
+                <button
+                    type="button"
+                    onClick={fillDemo}
+                    className="mt-3 w-full rounded-xl border border-amber-500/40 bg-amber-500/12 px-3 py-2 text-xs font-semibold text-amber-300 transition hover:bg-amber-500/20 hover:text-amber-200 active:scale-95"
+                >
+                    ↙ Fill credentials automatically
+                </button>
+            </div>
+
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
                 <label className="block space-y-2 text-sm text-white">
                     <span className="text-xs uppercase tracking-[0.24em] text-(--muted)">Email</span>
                     <input
