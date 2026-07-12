@@ -115,6 +115,25 @@ export default async function Home({ searchParams }: DashboardProps) {
     orderBy: { createdAt: "desc" }
   });
 
+  // 5. Bonus Analytics: Expired Licenses & Top Maintenance Cost Vehicles
+  const expiredLicenses = await prisma.driver.count({
+    where: { licenseExpiryDate: { lt: new Date() } }
+  });
+
+  const maintByVehicle = await prisma.maintenanceLog.groupBy({
+    by: ['vehicleId'],
+    _sum: { cost: true },
+    orderBy: { _sum: { cost: 'desc' } },
+    take: 3
+  });
+
+  const topMaintVehicles = await Promise.all(
+    maintByVehicle.map(async (m) => {
+      const v = await prisma.vehicle.findUnique({ where: { id: m.vehicleId } });
+      return { vehicle: v!, totalCost: m._sum.cost || 0 };
+    })
+  );
+
   return (
     <AppShell activePath="/">
       <PageHeader
@@ -122,6 +141,13 @@ export default async function Home({ searchParams }: DashboardProps) {
         title="Fleet command center"
         description="A live reference operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
       />
+
+      {expiredLicenses > 0 && (
+        <div className="mb-6 rounded-2xl border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] p-4 text-[var(--danger)] animate-fade-up">
+          <strong className="block text-white mb-1">Compliance Alert</strong>
+          {expiredLicenses} driver{expiredLicenses === 1 ? '' : 's'} {expiredLicenses === 1 ? 'has' : 'have'} expired licenses. Dispatch limits automatically enforced.
+        </div>
+      )}
 
       <DashboardFilters />
 
@@ -197,6 +223,23 @@ export default async function Home({ searchParams }: DashboardProps) {
               new Date(record.date).toLocaleDateString(),
               formatCurrency(record.cost),
               <Pill key={`${record.id}-maint`} tone="warning">Active</Pill>
+            ])}
+          />
+        )}
+      </Panel>
+
+      <Panel title="Highest Maintenance Assets" subtitle="Analytics on which vehicles cost the most to maintain globally">
+        {topMaintVehicles.length === 0 ? (
+          <div className="text-sm text-[var(--muted)] py-4">No maintenance data available.</div>
+        ) : (
+          <Table
+            columns={["Vehicle", "Registration", "Total Maint. Cost"]}
+            rows={topMaintVehicles.map(m => [
+              m.vehicle.nameModel,
+              m.vehicle.registrationNumber,
+              <span key={`cost-${m.vehicle.id}`} className="font-mono text-[var(--danger)]">
+                {formatCurrency(m.totalCost)}
+              </span>
             ])}
           />
         )}
