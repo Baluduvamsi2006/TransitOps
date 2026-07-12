@@ -1,17 +1,104 @@
 import { AppShell } from "../../components/transit-shell";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
-import { expenseRows, financeSummary, fuelRows } from "../../lib/transitops-data";
+import { prisma } from "../../lib/prisma";
+import { createFuelLog, deleteFuelLog, createExpense, deleteExpense } from "./actions";
+import { FinanceFilters } from "./finance-filters";
+import { DatePickerField } from "../../components/date-picker-field";
 
-const financeKpis = [
-  { label: "Fuel Spend", value: "$31.5K", tone: "accent" as const },
-  { label: "Maintenance Spend", value: "$43.0K", tone: "warning" as const },
-  { label: "Other Expenses", value: "$12.4K", tone: "info" as const },
-  { label: "Total Cost", value: "$86.9K", tone: "success" as const }
-];
+export const dynamic = "force-dynamic";
 
-export default function FinancePage() {
+function formatDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+type FinancePageProps = {
+  searchParams?: Promise<{
+    search?: string;
+    vehicleId?: string;
+    message?: string;
+    error?: string;
+  }>;
+};
+
+export default async function FinancePage(props: FinancePageProps) {
+  const params = (await props.searchParams) ?? {};
+  const searchTerm = (params.search ?? "").trim().toLowerCase();
+  const filterVehicleId = params.vehicleId ?? "All";
+  const message = params.message;
+  const error = params.error;
+
+  // Fetch all vehicles for dropdown selection and filtering
+  const vehicles = await prisma.vehicle.findMany({
+    orderBy: { nameModel: "asc" }
+  });
+
+  // Fetch fuel logs
+  const fuelLogs = await prisma.fuelLog.findMany({
+    include: { vehicle: true },
+    orderBy: { date: "desc" }
+  });
+
+  // Fetch expenses
+  const expenses = await prisma.expense.findMany({
+    include: { vehicle: true },
+    orderBy: { date: "desc" }
+  });
+
+  // Fetch maintenance logs to calculate maintenance spend
+  const maintenanceLogs = await prisma.maintenanceLog.findMany();
+
+  // Apply filters
+  let filteredFuel = fuelLogs;
+  if (filterVehicleId !== "All") {
+    filteredFuel = filteredFuel.filter((f) => f.vehicleId === filterVehicleId);
+  }
+  if (searchTerm) {
+    filteredFuel = filteredFuel.filter(
+      (f) =>
+        f.vehicle.nameModel.toLowerCase().includes(searchTerm) ||
+        f.vehicle.registrationNumber.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  let filteredExpenses = expenses;
+  if (filterVehicleId !== "All") {
+    filteredExpenses = filteredExpenses.filter((e) => e.vehicleId === filterVehicleId);
+  }
+  if (searchTerm) {
+    filteredExpenses = filteredExpenses.filter(
+      (e) =>
+        e.description.toLowerCase().includes(searchTerm) ||
+        e.vehicle.nameModel.toLowerCase().includes(searchTerm) ||
+        e.vehicle.registrationNumber.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Calculate live financial KPIs
+  const totalFuelSpend = fuelLogs.reduce((sum, log) => sum + log.cost, 0);
+  const totalMaintSpend = maintenanceLogs.reduce((sum, log) => sum + log.cost, 0);
+  const totalOtherSpend = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalCost = totalFuelSpend + totalMaintSpend + totalOtherSpend;
+
+  const financeKpis = [
+    { label: "Fuel Spend", value: `₹${totalFuelSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, tone: "accent" as const },
+    { label: "Maintenance Spend", value: `₹${totalMaintSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, tone: "warning" as const },
+    { label: "Other Expenses", value: `₹${totalOtherSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, tone: "info" as const },
+    { label: "Total operational cost", value: `₹${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, tone: "success" as const }
+  ];
+
+  // Calculate summary metrics
+  const totalLiters = fuelLogs.reduce((sum, log) => sum + log.liters, 0);
+  const averagePricePerLiter = totalLiters > 0 ? totalFuelSpend / totalLiters : 0;
+
+  const financeSummary = [
+    { label: "Total Fuel Logs", value: `${fuelLogs.length} entries` },
+    { label: "Total Liters Filled", value: `${totalLiters.toFixed(1)} L` },
+    { label: "Avg Price / Liter", value: `₹${averagePricePerLiter.toFixed(2)}` },
+    { label: "Total Expense Entries", value: `${expenses.length} entries` }
+  ];
+
   return (
-    <AppShell activePath="/finance">
+    <AppShell activePath="/finance" user={null}>
       <PageHeader
         eyebrow="Fuel & Expenses"
         title="Cost logging and operational spend"
@@ -24,21 +111,142 @@ export default function FinancePage() {
         ))}
       </StatGrid>
 
-      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <Panel title="Logging drawer" subtitle="This area will later become the inline create form for fuel and expense entries.">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Fuel log fields</p>
-              <p className="mt-2 text-sm text-white">Vehicle, liters, cost, date</p>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Expense fields</p>
-              <p className="mt-2 text-sm text-white">Trip, toll, other, date</p>
-            </div>
-          </div>
+      {(message || error) && (
+        <div className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${error ? "border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] text-[var(--danger)]" : "border-[color:rgba(92,191,118,0.35)] bg-[color:rgba(92,191,118,0.12)] text-[var(--success)]"}`}>
+          {error ?? message}
+        </div>
+      )}
 
-          <div className="mt-5 rounded-2xl border border-white/8 bg-white/6 p-4 text-sm leading-7 text-[var(--muted-2)]">
-            Fuel and maintenance spending will feed fleet utilization, operational cost, and ROI reporting once the database layer is connected.
+      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr] mb-6">
+        <Panel title="Cost logging" subtitle="Log fuel replenishment or other operational expenses.">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--accent)] mb-3">Refuel Asset</h3>
+              <form action={createFuelLog} className="grid gap-4 md:grid-cols-3">
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Vehicle</span>
+                  <select
+                    name="vehicleId"
+                    required
+                    style={{ colorScheme: "dark" }}
+                    className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">Select vehicle...</option>
+                    {vehicles.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.nameModel} ({v.registrationNumber})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Liters</span>
+                  <input
+                    type="number"
+                    name="liters"
+                    required
+                    min="0.1"
+                    step="0.1"
+                    placeholder="45"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Cost (₹)</span>
+                  <input
+                    type="number"
+                    name="cost"
+                    required
+                    min="1"
+                    step="0.01"
+                    placeholder="4200"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  />
+                </label>
+
+                <div className="md:col-span-2">
+                  <DatePickerField
+                    name="date"
+                    label="Refuel date"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-end md:col-span-1">
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-[var(--accent)] py-2.5 text-sm font-semibold text-[var(--accent-ink)] hover:brightness-110 transition"
+                  >
+                    Log Fuel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="border-t border-white/8 pt-5">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--info)] mb-3">Log Other Expense</h3>
+              <form action={createExpense} className="grid gap-4 md:grid-cols-3">
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Vehicle</span>
+                  <select
+                    name="vehicleId"
+                    required
+                    style={{ colorScheme: "dark" }}
+                    className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">Select vehicle...</option>
+                    {vehicles.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.nameModel} ({v.registrationNumber})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Description</span>
+                  <input
+                    type="text"
+                    name="description"
+                    required
+                    placeholder="Tolls / Parking / Permits"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Amount (₹)</span>
+                  <input
+                    type="number"
+                    name="amount"
+                    required
+                    min="1"
+                    step="0.01"
+                    placeholder="450"
+                    className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-2 text-sm text-white outline-none focus:border-[var(--accent)]"
+                  />
+                </label>
+
+                <div className="md:col-span-2">
+                  <DatePickerField
+                    name="date"
+                    label="Expense date"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-end md:col-span-1">
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-[var(--info)] py-2.5 text-sm font-semibold text-white hover:brightness-110 transition"
+                  >
+                    Log Expense
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </Panel>
 
@@ -47,38 +255,74 @@ export default function FinancePage() {
             {financeSummary.map((item) => (
               <div key={item.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm">
                 <span className="text-[var(--muted)]">{item.label}</span>
-                <span className="text-white">{item.value}</span>
+                <span className="text-white font-medium">{item.value}</span>
               </div>
             ))}
           </div>
         </Panel>
       </div>
 
-      <Panel title="Fuel logs" subtitle="Per-vehicle fuel records used for efficiency calculations.">
-        <Table
-          columns={["Vehicle", "Date", "Liters", "Cost"]}
-          rows={fuelRows.map((row) => [
-            row.vehicle,
-            row.date,
-            `${row.liters} L`,
-            row.cost
-          ])}
-        />
-      </Panel>
+      <div className="mb-6">
+        <FinanceFilters vehicles={vehicles} />
+      </div>
 
-      <Panel title="Other expenses" subtitle="Tolls and other trip-linked expenses tracked separately from fuel.">
-        <Table
-          columns={["Trip", "Vehicle", "Toll", "Other", "Date", "State"]}
-          rows={expenseRows.map((row) => [
-            row.trip,
-            row.vehicle,
-            row.toll,
-            row.other,
-            row.date,
-            <Pill key={`${row.trip}-expense`} tone="info">Logged</Pill>
-          ])}
-        />
-      </Panel>
+      <div className="grid gap-6">
+        <Panel title="Fuel logs" subtitle="Per-vehicle fuel records used for efficiency calculations.">
+          {filteredFuel.length === 0 ? (
+            <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No fuel records match your search filters.</div>
+          ) : (
+            <Table
+              columns={["Vehicle", "Date", "Liters", "Cost", "Actions"]}
+              rows={filteredFuel.map((row) => [
+                <div key={`${row.id}-vehicle`}>
+                  <div className="font-semibold text-white">{row.vehicle.nameModel}</div>
+                  <div className="text-xs text-[var(--muted)]">{row.vehicle.registrationNumber}</div>
+                </div>,
+                formatDate(row.date),
+                `${row.liters} L`,
+                `₹${row.cost.toLocaleString()}`,
+                <form key={`${row.id}-action`} action={deleteFuelLog}>
+                  <input type="hidden" name="id" value={row.id} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[color:rgba(217,80,63,0.18)]"
+                  >
+                    Delete
+                  </button>
+                </form>
+              ])}
+            />
+          )}
+        </Panel>
+
+        <Panel title="Other expenses" subtitle="Tolls and other trip-linked expenses tracked separately from fuel.">
+          {filteredExpenses.length === 0 ? (
+            <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No expense records match your search filters.</div>
+          ) : (
+            <Table
+              columns={["Vehicle", "Description", "Amount", "Date", "Actions"]}
+              rows={filteredExpenses.map((row) => [
+                <div key={`${row.id}-vehicle`}>
+                  <div className="font-semibold text-white">{row.vehicle.nameModel}</div>
+                  <div className="text-xs text-[var(--muted)]">{row.vehicle.registrationNumber}</div>
+                </div>,
+                row.description,
+                `₹${row.amount.toLocaleString()}`,
+                formatDate(row.date),
+                <form key={`${row.id}-action`} action={deleteExpense}>
+                  <input type="hidden" name="id" value={row.id} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-[color:rgba(217,80,63,0.35)] bg-[color:rgba(217,80,63,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[color:rgba(217,80,63,0.18)]"
+                  >
+                    Delete
+                  </button>
+                </form>
+              ])}
+            />
+          )}
+        </Panel>
+      </div>
     </AppShell>
   );
 }
