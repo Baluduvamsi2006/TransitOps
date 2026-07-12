@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
+import { DashboardFilters } from "../components/dashboard-filters";
 import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
 import { prisma } from "../lib/prisma";
 import { TripStatus, VehicleStatus } from "@prisma/client";
@@ -24,7 +25,15 @@ function toStatusTone(status: string) {
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+type DashboardProps = {
+  searchParams?: Promise<{
+    type?: string;
+    status?: string;
+    region?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: DashboardProps) {
   const cookieStore = await cookies();
   const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 
@@ -32,8 +41,18 @@ export default async function Home() {
     redirect("/login");
   }
 
+  const params = (await searchParams) ?? {};
+  const vType = params.type && params.type !== "All" ? params.type : undefined;
+  const vStatus = params.status && params.status !== "All" ? params.status as VehicleStatus : undefined;
+  const vRegion = params.region && params.region !== "All" ? params.region : undefined;
+
   // 1. Vehicles
-  const vehicles = await prisma.vehicle.findMany();
+  const vehicleWhere = {
+    ...(vType ? { type: vType } : {}),
+    ...(vStatus ? { status: vStatus } : {}),
+  };
+
+  const vehicles = await prisma.vehicle.findMany({ where: vehicleWhere });
   const totalActive = vehicles.filter((v) => v.status !== "RETIRED").length;
   const available = vehicles.filter((v) => v.status === "AVAILABLE").length;
   const inShop = vehicles.filter((v) => v.status === "IN_SHOP").length;
@@ -43,7 +62,16 @@ export default async function Home() {
   const fleetUtilization = totalActive > 0 ? ((onTrip / totalActive) * 100).toFixed(0) : "0";
 
   // 2. Trips
+  // Rough textual region match on source or destination for Trip-based filtering
+  const tripWhere = vRegion ? {
+    OR: [
+      { source: { contains: vRegion, mode: "insensitive" as const } },
+      { destination: { contains: vRegion, mode: "insensitive" as const } }
+    ]
+  } : {};
+
   const trips = await prisma.trip.findMany({
+    where: tripWhere,
     orderBy: { createdAt: "desc" },
     include: { vehicle: true, driver: true }
   });
@@ -94,6 +122,8 @@ export default async function Home() {
         title="Fleet command center"
         description="A live reference operations dashboard for vehicle control, dispatch visibility, maintenance, and cost tracking."
       />
+
+      <DashboardFilters />
 
       <StatGrid>
         {dashboardKpis.map((metric) => (
