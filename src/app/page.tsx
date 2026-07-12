@@ -4,8 +4,10 @@ import Link from "next/link";
 
 import { AppShell } from "../components/transit-shell";
 import { MetricCard, Panel, PageHeader, Pill, StatGrid, Table } from "../components/transit-ui";
+import { DashboardFilters } from "../components/dashboard-filters";
 import { SESSION_COOKIE_NAME, readSessionToken } from "../lib/jwt";
 import { prisma } from "../lib/prisma";
+import { TripStatus, VehicleStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,15 @@ function calcRevenue(distance: number, weight: number) {
   return distance * (15 + weight * 0.005);
 }
 
-export default async function Home() {
+type DashboardProps = {
+  searchParams?: Promise<{
+    type?: string;
+    status?: string;
+    region?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: DashboardProps) {
   const cookieStore = await cookies();
   const sessionToken = await readSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 
@@ -40,8 +50,17 @@ export default async function Home() {
     redirect("/login");
   }
 
+  const params = (await searchParams) ?? {};
+  const vType = params.type && params.type !== "All" ? params.type : undefined;
+  const vStatus = params.status && params.status !== "All" ? params.status as VehicleStatus : undefined;
+  const vRegion = params.region && params.region !== "All" ? params.region : undefined;
+
   // ── Vehicles ────────────────────────────────────────────────────────────────
-  const vehicles = await prisma.vehicle.findMany();
+  const vehicleWhere = {
+    ...(vType ? { type: vType } : {}),
+    ...(vStatus ? { status: vStatus } : {}),
+  };
+  const vehicles = await prisma.vehicle.findMany({ where: vehicleWhere });
   const totalVehicles = vehicles.length;
   const available = vehicles.filter((v) => v.status === "AVAILABLE").length;
   const onTrip = vehicles.filter((v) => v.status === "ON_TRIP").length;
@@ -51,7 +70,15 @@ export default async function Home() {
   const fleetUtilization = totalActive > 0 ? Math.round((onTrip / totalActive) * 100) : 0;
 
   // ── Trips ────────────────────────────────────────────────────────────────────
+  const tripWhere = vRegion ? {
+    OR: [
+      { source: { contains: vRegion, mode: "insensitive" as const } },
+      { destination: { contains: vRegion, mode: "insensitive" as const } }
+    ]
+  } : {};
+
   const trips = await prisma.trip.findMany({
+    where: tripWhere,
     orderBy: { createdAt: "desc" },
     include: { vehicle: true, driver: true }
   });
@@ -104,15 +131,15 @@ export default async function Home() {
 
   const vehicleStatusBars = [
     { label: "Available", count: available, pct: totalActive > 0 ? (available / totalActive) * 100 : 0, fill: "bg-[var(--success)]" },
-    { label: "On Trip",   count: onTrip,   pct: totalActive > 0 ? (onTrip / totalActive) * 100 : 0,   fill: "bg-[var(--info)]" },
-    { label: "In Shop",   count: inShop,   pct: totalActive > 0 ? (inShop / totalActive) * 100 : 0,   fill: "bg-[var(--warning)]" },
-    { label: "Retired",   count: retired,  pct: totalVehicles > 0 ? (retired / totalVehicles) * 100 : 0, fill: "bg-[var(--danger)]" }
+    { label: "On Trip", count: onTrip, pct: totalActive > 0 ? (onTrip / totalActive) * 100 : 0, fill: "bg-[var(--info)]" },
+    { label: "In Shop", count: inShop, pct: totalActive > 0 ? (inShop / totalActive) * 100 : 0, fill: "bg-[var(--warning)]" },
+    { label: "Retired", count: retired, pct: totalVehicles > 0 ? (retired / totalVehicles) * 100 : 0, fill: "bg-[var(--danger)]" }
   ];
 
   const costBreakdown = [
-    { label: "Fuel",        value: totalFuel,  pct: totalOpCost > 0 ? (totalFuel / totalOpCost) * 100 : 0,  fill: "bg-[var(--accent)]" },
+    { label: "Fuel", value: totalFuel, pct: totalOpCost > 0 ? (totalFuel / totalOpCost) * 100 : 0, fill: "bg-[var(--accent)]" },
     { label: "Maintenance", value: totalMaint, pct: totalOpCost > 0 ? (totalMaint / totalOpCost) * 100 : 0, fill: "bg-[var(--warning)]" },
-    { label: "Other",       value: totalOther, pct: totalOpCost > 0 ? (totalOther / totalOpCost) * 100 : 0, fill: "bg-[var(--info)]" }
+    { label: "Other", value: totalOther, pct: totalOpCost > 0 ? (totalOther / totalOpCost) * 100 : 0, fill: "bg-[var(--info)]" }
   ];
 
   return (
@@ -122,6 +149,8 @@ export default async function Home() {
         title="Fleet command center"
         description="Live operations overview — revenue, costs, fleet health, and dispatch status all updated in real-time."
       />
+
+      <DashboardFilters />
 
       {/* KPI grid */}
       <StatGrid>
