@@ -27,6 +27,15 @@ export const roleAllowedPaths: Record<Role, string[]> = {
     FINANCIAL_ANALYST: ["/", "/settings", "/fleet", "/finance", "/reports"]
 };
 
+export const roleManagePaths: Record<Role, string[]> = {
+    SUPER_ADMIN: ["/", "/settings", "/fleet", "/drivers", "/trips", "/maintenance", "/finance", "/reports", "/users"],
+    FLEET_MANAGER: ["/", "/settings", "/fleet", "/drivers"],
+    DISPATCHER: ["/", "/settings", "/trips"],
+    DRIVER: ["/", "/settings", "/trips"],
+    SAFETY_OFFICER: ["/", "/settings", "/drivers"],
+    FINANCIAL_ANALYST: ["/", "/settings", "/finance", "/reports"]
+};
+
 export const publicAuthPaths = ["/login", "/forgot-password", "/reset-password"] as const;
 
 export function isPublicAuthPath(pathname: string) {
@@ -59,4 +68,20 @@ export function normalizeRole(role: string | null | undefined): Role | null {
 
 export function getLandingPathForRole(role: Role) {
     return roleLandingPaths[role];
+}
+
+export function canManagePath(role: Role, pathname: string) {
+    if (role === "SUPER_ADMIN") {
+        return true;
+    }
+
+    const normalizedPath = pathname === "/" ? "/" : pathname.replace(/\/$/, "");
+
+    return roleManagePaths[role].some((allowedPath) => {
+        if (allowedPath === "/") {
+            return normalizedPath === "/";
+        }
+
+        return normalizedPath === allowedPath || normalizedPath.startsWith(`${allowedPath}/`);
+    });
 }
