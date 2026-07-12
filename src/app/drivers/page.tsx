@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "../../components/transit-shell";
+import { DatePickerField } from "../../components/date-picker-field";
 import { MetricCard, PageHeader, Panel, Pill, StatGrid, Table } from "../../components/transit-ui";
 import { prisma } from "../../lib/prisma";
 import { currentTimestamp } from "../../lib/time";
@@ -9,6 +10,7 @@ import { createDriver, deleteDriver, updateDriver } from "./actions";
 type DriversPageProps = {
   searchParams?: Promise<{
     edit?: string;
+    q?: string;
     error?: string;
     message?: string;
   }>;
@@ -41,19 +43,31 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     orderBy: [{ status: "asc" }, { name: "asc" }]
   });
   const nowTime = currentTimestamp();
+  const searchTerm = (params.q ?? "").trim().toLowerCase();
 
   const selectedDriver = params.edit ? drivers.find((driver) => driver.id === params.edit) : undefined;
-  const availableDrivers = drivers.filter((driver) => driver.status === "AVAILABLE").length;
-  const onTripDrivers = drivers.filter((driver) => driver.status === "ON_TRIP").length;
-  const offDutyDrivers = drivers.filter((driver) => driver.status === "OFF_DUTY").length;
-  const suspendedDrivers = drivers.filter((driver) => driver.status === "SUSPENDED").length;
-  const expiringSoonDrivers = drivers.filter((driver) => {
+  const visibleDrivers = searchTerm
+    ? drivers.filter((driver) => {
+        const haystack = [driver.name, driver.licenseNumber, driver.licenseCategory, driver.contactNumber, driver.status]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(searchTerm);
+      })
+    : drivers;
+
+  const availableDrivers = visibleDrivers.filter((driver) => driver.status === "AVAILABLE").length;
+  const onTripDrivers = visibleDrivers.filter((driver) => driver.status === "ON_TRIP").length;
+  const offDutyDrivers = visibleDrivers.filter((driver) => driver.status === "OFF_DUTY").length;
+  const suspendedDrivers = visibleDrivers.filter((driver) => driver.status === "SUSPENDED").length;
+  const expiringSoonDrivers = visibleDrivers.filter((driver) => {
     const daysUntilExpiry = (driver.licenseExpiryDate.getTime() - nowTime) / (1000 * 60 * 60 * 24);
     return daysUntilExpiry <= 30;
   }).length;
-  const dispatchReadyDrivers = drivers.filter((driver) => canDispatch(driver, nowTime));
+  const dispatchReadyDrivers = visibleDrivers.filter((driver) => canDispatch(driver, nowTime));
   const message = params.message;
   const error = params.error;
+  const highlightedDriverId = params.edit;
 
   const driverSummary = [
     { label: "Available Drivers", value: availableDrivers, tone: "success" as const },
@@ -66,8 +80,8 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     <AppShell activePath="/drivers">
       <PageHeader
         eyebrow="Driver Management"
-        title="Profiles, compliance, and safety scores"
-        description="A database-backed driver workspace for onboarding, license tracking, safety monitoring, and dispatch eligibility."
+        title="Driver records and compliance"
+        description="Keep driver details, license status, and dispatch readiness in one clean workspace."
       />
 
       <StatGrid>
@@ -83,7 +97,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       )}
 
       <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <Panel title={selectedDriver ? "Edit driver" : "Register driver"} subtitle="Create or update a driver profile with validation against unique license numbers and dispatch eligibility rules.">
+        <Panel title={selectedDriver ? "Edit driver" : "Add driver"} subtitle="Keep driver records current and visible for dispatch decisions.">
           <form action={selectedDriver ? updateDriver : createDriver} className="grid gap-4 md:grid-cols-2">
             <input type="hidden" name="returnTo" value={selectedDriver ? `/drivers?edit=${selectedDriver.id}` : "/drivers"} />
             {selectedDriver ? <input type="hidden" name="id" value={selectedDriver.id} /> : null}
@@ -121,19 +135,15 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               />
             </label>
 
-            <label className="space-y-2 md:col-span-1">
-              <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">License expiry</span>
-              <input
-                type="date"
-                name="licenseExpiryDate"
-                defaultValue={selectedDriver ? toInputDateValue(selectedDriver.licenseExpiryDate) : ""}
-                required
-                className="w-full rounded-2xl border border-white/8 bg-white/6 px-4 py-3 text-sm text-white outline-none"
-              />
-            </label>
+            <DatePickerField
+              name="licenseExpiryDate"
+              label="License expiry"
+              defaultValue={selectedDriver ? toInputDateValue(selectedDriver.licenseExpiryDate) : ""}
+              required
+            />
 
             <label className="space-y-2 md:col-span-1">
-              <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Contact number</span>
+              <span className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Num</span>
               <input
                 name="contactNumber"
                 defaultValue={selectedDriver?.contactNumber ?? ""}
@@ -163,12 +173,20 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
                 name="status"
                 defaultValue={selectedDriver?.status ?? "AVAILABLE"}
                 style={{ colorScheme: "dark" }}
-                className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none"
+                className="w-full rounded-2xl border border-white/8 bg-[var(--panel)] px-4 py-3 text-sm text-white outline-none transition duration-300 focus:border-[var(--accent)]"
               >
-                <option className="bg-[var(--panel)] text-white" value="AVAILABLE">Available</option>
-                <option className="bg-[var(--panel)] text-white" value="ON_TRIP">On Trip</option>
-                <option className="bg-[var(--panel)] text-white" value="OFF_DUTY">Off Duty</option>
-                <option className="bg-[var(--panel)] text-white" value="SUSPENDED">Suspended</option>
+                <option className="bg-[var(--panel)] text-white" value="AVAILABLE">
+                  Available
+                </option>
+                <option className="bg-[var(--panel)] text-white" value="ON_TRIP">
+                  On Trip
+                </option>
+                <option className="bg-[var(--panel)] text-white" value="OFF_DUTY">
+                  Off Duty
+                </option>
+                <option className="bg-[var(--panel)] text-white" value="SUSPENDED">
+                  Suspended
+                </option>
               </select>
             </label>
 
@@ -191,7 +209,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
           </form>
         </Panel>
 
-        <Panel title="Dispatch eligibility" subtitle="Drivers must be available and have a valid license date before they can be selected for trips.">
+        <Panel title="Dispatch eligibility" subtitle="Only drivers who are available and valid can be selected for trips.">
           <div className="space-y-4 text-sm leading-7 text-[var(--muted-2)]">
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
               <div className="text-[var(--muted)]">Expiring within 30 days</div>
@@ -204,26 +222,31 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/6 p-4">
               <div className="text-[var(--muted)]">Status rule</div>
-              <div className="mt-2 text-sm text-[var(--muted-2)]">
-                Suspended or On Trip drivers are blocked from assignment until their state changes back to Available.
-              </div>
+              <div className="mt-2 text-sm text-[var(--muted-2)]">Suspended or On Trip drivers are blocked from assignment until their state changes back to Available.</div>
             </div>
           </div>
         </Panel>
       </div>
 
-      <Panel title="Driver roster" subtitle="Edit or delete records from the live driver table. License uniqueness is enforced at write time.">
+      <Panel title="Driver roster" subtitle={searchTerm ? `Showing matches for "${params.q}"` : "Edit or delete records from the live driver table."}>
+        {searchTerm && visibleDrivers.length === 0 ? (
+          <div className="rounded-2xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--muted-2)]">No drivers match your search.</div>
+        ) : null}
         <Table
           columns={["Driver", "License", "Category", "Expiry", "Safety", "Status", "Actions"]}
-          rows={drivers.map((driver) => [
-            driver.name,
+          rows={visibleDrivers.map((driver) => [
+            <Link key={`${driver.id}-name`} href={`/drivers?edit=${driver.id}&q=${encodeURIComponent(params.q ?? "")}`} className="font-medium text-white transition hover:text-[var(--accent)]">
+              {driver.name}
+            </Link>,
             driver.licenseNumber,
             driver.licenseCategory,
             <span key={`${driver.id}-expiry`} className={driver.licenseExpiryDate.getTime() < nowTime ? "text-[var(--danger)]" : "text-white"}>
               {formatDate(driver.licenseExpiryDate)}
             </span>,
             `${driver.safetyScore.toFixed(0)}%`,
-            <Pill key={`${driver.id}-status`} tone={toStatusTone(driver.status)}>{driver.status.replace("_", " ")}</Pill>,
+            <Pill key={`${driver.id}-status`} tone={toStatusTone(driver.status)}>
+              {driver.status.replace("_", " ")}
+            </Pill>,
             <div key={`${driver.id}-actions`} className="flex justify-end gap-2">
               <Link
                 href={`/drivers?edit=${driver.id}`}
@@ -243,6 +266,23 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               </form>
             </div>
           ])}
+          getRowClassName={(rowIndex) => {
+            const driver = visibleDrivers[rowIndex];
+
+            if (!driver) {
+              return "";
+            }
+
+            if (highlightedDriverId && driver.id === highlightedDriverId) {
+              return "bg-[color:rgba(224,138,46,0.10)] ring-1 ring-[color:rgba(224,138,46,0.28)]";
+            }
+
+            if (searchTerm) {
+              return "bg-[color:rgba(255,255,255,0.02)]";
+            }
+
+            return "";
+          }}
         />
       </Panel>
     </AppShell>

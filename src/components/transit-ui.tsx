@@ -15,7 +15,7 @@ export function MetricCard({ label, value, tone = "neutral" }: MetricCardProps) 
   }[tone];
 
   return (
-    <article className="rounded-[1.4rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+    <article className="animate-fade-up rounded-[1.4rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform duration-300 hover:-translate-y-0.5">
       <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">{label}</p>
       <p className={`mt-4 text-3xl font-semibold ${toneClass}`}>{value}</p>
     </article>
@@ -30,7 +30,7 @@ type PanelProps = {
 
 export function Panel({ title, subtitle, children }: PanelProps) {
   return (
-    <section className="rounded-[1.6rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:p-6">
+    <section className="animate-fade-up rounded-[1.6rem] border border-white/8 bg-[var(--panel)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-transform duration-300 hover:-translate-y-0.5 lg:p-6">
       <div className="mb-4">
         <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">{title}</h2>
         {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-2)]">{subtitle}</p> : null}
@@ -48,7 +48,7 @@ type PageHeaderProps = {
 
 export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
   return (
-    <div className="mb-6 space-y-3">
+    <div className="animate-fade-up mb-6 space-y-3">
       <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--accent)]">{eyebrow}</p>
       <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
       <p className="max-w-3xl text-sm leading-7 text-[var(--muted-2)] sm:text-base">{description}</p>
@@ -71,7 +71,7 @@ export function Pill({ tone = "muted", children }: PillProps) {
     muted: "bg-white/6 text-[var(--muted)] border-white/8"
   }[tone];
 
-  return <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${classes}`}>{children}</span>;
+  return <span className={`animate-pop-in inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${classes}`}>{children}</span>;
 }
 
 type StatGridProps = {
@@ -85,11 +85,12 @@ export function StatGrid({ children }: StatGridProps) {
 type TableProps = {
   columns: string[];
   rows: React.ReactNode[][];
+  getRowClassName?: (rowIndex: number) => string;
 };
 
-export function Table({ columns, rows }: TableProps) {
+export function Table({ columns, rows, getRowClassName }: TableProps) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/6 bg-white/2">
+    <div className="animate-fade-up overflow-hidden rounded-2xl border border-white/6 bg-white/2">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead>
@@ -101,7 +102,7 @@ export function Table({ columns, rows }: TableProps) {
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="border-b border-white/6 last:border-b-0">
+              <tr key={rowIndex} className={`border-b border-white/6 last:border-b-0 ${getRowClassName?.(rowIndex) ?? ""}`}>
                 {row.map((cell, cellIndex) => (
                   <td key={cellIndex} className={`px-4 py-3 ${cellIndex === row.length - 1 ? "text-right" : ""}`}>
                     {cell}

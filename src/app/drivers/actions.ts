@@ -115,19 +115,18 @@ export async function createDriver(formData: FormData) {
 export async function updateDriver(formData: FormData) {
   const id = readString(formData, "id");
   const parsed = parseDriverForm(formData);
-  const returnTo = readString(formData, "returnTo") || DRIVER_PATH;
 
   if (!id) {
-    redirectTo(buildRedirectPath(returnTo, "error", "Missing driver id."));
+    redirectTo(buildRedirectPath(DRIVER_PATH, "error", "Missing driver id."));
   }
 
   if (parsed.error) {
-    redirectTo(buildRedirectPath(returnTo, "error", parsed.error));
+    redirectTo(buildRedirectPath(DRIVER_PATH, "error", parsed.error));
   }
 
   const existingDriver = await findDuplicateLicense(parsed.data!.licenseNumber, id);
   if (existingDriver) {
-    redirectTo(buildRedirectPath(returnTo, "error", "That license number already exists."));
+    redirectTo(buildRedirectPath(DRIVER_PATH, "error", "That license number already exists."));
   }
 
   try {
@@ -137,14 +136,14 @@ export async function updateDriver(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      redirectTo(buildRedirectPath(returnTo, "error", "Driver not found."));
+      redirectTo(buildRedirectPath(DRIVER_PATH, "error", "Driver not found."));
     }
 
-    redirectTo(buildRedirectPath(returnTo, "error", "Unable to update the driver right now."));
+    redirectTo(buildRedirectPath(DRIVER_PATH, "error", "Unable to update the driver right now."));
   }
 
   revalidatePath(DRIVER_PATH);
-  redirectTo(buildRedirectPath(returnTo, "message", "Driver updated."));
+  redirectTo(buildRedirectPath(DRIVER_PATH, "message", "Driver updated."));
 }
 
 export async function deleteDriver(formData: FormData) {
