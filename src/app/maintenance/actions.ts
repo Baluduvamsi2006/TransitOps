@@ -42,23 +42,30 @@ export async function closeMaintenanceLog(formData: FormData) {
     }
 
     const log = await prisma.maintenanceLog.findUnique({
-        where: { id: logId }
+        where: { id: logId },
+        include: { vehicle: true }
     });
 
     if (!log) throw new Error("Log not found");
 
-    await prisma.$transaction([
+    const transactions: any[] = [
         prisma.maintenanceLog.update({
             where: { id: logId },
             data: { isOpen: false }
-        }),
-        // If the vehicle was retired while in shop, we probably shouldn't set it to available.
-        // However, the rule states we return it to AVAILABLE. We'll enforce basic flow.
-        prisma.vehicle.update({
-            where: { id: log.vehicleId },
-            data: { status: "AVAILABLE" }
         })
-    ]);
+    ];
+
+    // Comply with Rule 10: "Closing maintenance restores the vehicle to Available (unless retired)"
+    if (log.vehicle.status !== "RETIRED") {
+        transactions.push(
+            prisma.vehicle.update({
+                where: { id: log.vehicleId },
+                data: { status: "AVAILABLE" }
+            })
+        );
+    }
+
+    await prisma.$transaction(transactions);
 
     revalidatePath("/", "layout");
 }

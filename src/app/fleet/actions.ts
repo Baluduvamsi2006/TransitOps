@@ -88,3 +88,54 @@ export async function editVehicleDetails(id: string, formData: FormData) {
     return { success: false, error: "Failed to update vehicle details." };
   }
 }
+
+export async function saveVehicleDocument(id: string, name: string, url: string) {
+  try {
+    const session = await getServerSession();
+    if (!session || !canManagePath(session.role, "/fleet")) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const vehicle = await prisma.vehicle.findUnique({ where: { id } });
+    if (!vehicle) return { success: false, error: "Vehicle not found" };
+
+    const docs = Array.isArray(vehicle.documents) ? vehicle.documents : [];
+    docs.push({ name, url, dateAdded: new Date().toISOString() });
+
+    await prisma.vehicle.update({
+      where: { id },
+      data: { documents: docs },
+    });
+    
+    revalidatePath("/", "layout");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to save document." };
+  }
+}
+
+export async function deleteVehicleDocument(id: string, docIndex: number) {
+  try {
+    const session = await getServerSession();
+    if (!session || !canManagePath(session.role, "/fleet")) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const vehicle = await prisma.vehicle.findUnique({ where: { id } });
+    if (!vehicle) return { success: false, error: "Vehicle not found" };
+
+    let docs = Array.isArray(vehicle.documents) ? vehicle.documents : [];
+    if (docIndex >= 0 && docIndex < docs.length) {
+      docs.splice(docIndex, 1);
+      await prisma.vehicle.update({
+        where: { id },
+        data: { documents: docs },
+      });
+      revalidatePath("/", "layout");
+      return { success: true };
+    }
+    return { success: false, error: "Document not found" };
+  } catch (error) {
+    return { success: false, error: "Failed to delete document." };
+  }
+}

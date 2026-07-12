@@ -86,6 +86,17 @@ export function VehicleFilters() {
         <option value="IN_SHOP">In Shop</option>
         <option value="RETIRED">Retired</option>
       </select>
+
+      <select
+        value={searchParams.get("sort") || "newest"}
+        onChange={(e) => updateFilter("sort", e.target.value)}
+        className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-2 text-sm text-(--muted) outline-none focus:border-(--accent) transition"
+      >
+        <option value="newest">Sort: Newest First</option>
+        <option value="capacity-desc">Capacity: High to Low</option>
+        <option value="odometer-desc">Odometer: High to Low</option>
+        <option value="cost-desc">Cost: High to Low</option>
+      </select>
     </div>
   );
 }
